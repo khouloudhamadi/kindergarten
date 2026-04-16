@@ -1,0 +1,12 @@
+<!-- ======= Top Bar ======= -->
+<section th:fragment="topbar" id="topbar" class="d-flex align-items-center fixed-top topbar-transparent">
+    <div class="container-fluid container-xl d-flex align-items-center justify-content-center justify-content-lg-start">
+      <i class="bi bi-phone d-flex align-items-center"><span>+216 71 834 269</span></i>
+      <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span id="date">
+        <script>
+            var date = new Date();
+            document.getElementById("date").innerHTML = date;
+        </script>
+      </span></i>
+    </div>
+  </section>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Paiement de </span> l'Inscription</h2>
+            <div class="container" style="width:1000px;">
+                <div class="row" style="text-align:left;">
+                    <h4 style="color:white;"> <b> <span style="color:orange;">Parent  : </span>[[${parent.nom}]] [[${parent.prenom}]] </b></h4>
+                </div>
+                <div class="row">
+                    <table class="table table-bordered table-hover">
+                      <thead style="background-color:#E6EEF0">
+                          <tr>
+                          <th>Nom Enfant</th>
+                          <th>Prénom Enfant</th>
+                          <th>Jardin</th>
+                          <th>Année Scolaire</th>
+                          <th>Date Insc</th>
+                          <th>Paiement</th>
+                          </tr>
+                        </theader>
+                        <tbody>
+                          <th:block th:each="enfant: ${listInscPayment}">
+                            <tr>
+                              <td style="color:white"><b>[[${enfant.nom}]] </b></td>
+                              <td style="color:white"><b>[[${enfant.prenom}]] </b></td>
+                              <td style="color:white"><b>[[${enfant.kindergarten_name}]] </b></td>
+                              <td style="color:white"><b>[[${enfant.anneescol}]] </b></td>
+                              <td style="color:white"><b>[[${enfant.dateInsc}]] </b></td>
+                             
+                              <td>
+                                    <a th:href="@{'/parent/payment/pay/' + ${enfant.IdInsc}}" class="btn btn-success btn-sm">Paiement</a>
+                              </td>
+                            </tr>
+                          </th:block>
+                        </tbody>
+                      </table>
+            </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+</body>
+</html>

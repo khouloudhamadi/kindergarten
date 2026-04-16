@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Gestion des</span> Comptes</h2>
+            <div class="container" style="width:1000px;">
+   <!--   <div class="card">
+            <div class="card-header"> -->
+                <div class="row">
+                    <div class="col">
+                        <h3 style="color:white;"><b>Les Comptes </b></h3>
+                    </div>
+                    <div class="col" style="text-align:right;">
+                        <a class="btn btn-success" th:href="@{/compte/new}">Ajouter Compte</a>
+                    </div>
+                </div>
+     <!--       </div>
+            <div class="card-body">
+            -->
+                <div class="row">
+                <div class="container" style="overflow:auto;max-height:400px;">
+                <table class="table table-bordered table-hover">
+                    <thead style="background-color:#E6EEF0">
+                        <tr>
+                          
+                            <th style="text-align:center;color:black;">Créateur</th>
+                            <th style="text-align:center;color:black;">Email</th>
+                            <th style="text-align:center;color:black;">Active</th>
+                            <th style="text-align:center;color:black;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th:block th:each="compte : ${listcomptes}">
+                            <tr>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                 <font color=black><b>  [[${compte.type}]] </b> </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${compte.email}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <div th:if="${compte.enabled==true}">
+                                    <input class="form-check-input" type="checkbox" th:value="${compte.enabled}" checked>
+                                    </div>
+                                    <div th:unless="${compte.enabled==true}">
+                                        <input class="form-check-input" type="checkbox" th:value="${compte.enabled}" disabled>
+                                        </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <th:block th:if="${compte.enabled==true}">
+                                        <a class="btn btn-sm btn-warning" th:href="@{'/compte/desactiver/' + ${compte.email}}"><i class="bi bi-lock">Désactiver</i></a>
+                                    </th:block>
+                                    <th:block th:unless="${compte.enabled==true}">
+                                        
+                                        <a class="btn btn-sm btn-success" th:href="@{'/compte/activer/' + ${compte.email}}"><i class="bi bi-key">Activer</i></a>
+                                    </th:block>
+                                    &nbsp;
+                                    <a class="btn btn-sm btn-danger" th:href="@{'/compte/delete/' + ${compte.email}}"><i class="bi bi-trash"></i>Supprimer</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+</body>
+</html>

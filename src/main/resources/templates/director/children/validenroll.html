@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Validation Des</span> Inscriptions</h2>
+            <div class="container" style="width:1000px;">
+   <!--   <div class="card">
+            <div class="card-header"> -->
+                <div class="row">
+                    <div class="col">
+                        <h3 style="color:white;"><b>inscriptions </b></h3>
+                    </div>
+                    
+                </div>
+     <!--       </div>
+            <div class="card-body">
+            -->
+                <div class="row">
+                <div class="container" style="overflow:auto;max-height:400px;">
+                <table class="table table-bordered table-hover">
+                    <thead style="background-color:#E6EEF0">
+                        <tr>
+                            <th style="text-align:center;color:black;">ID inscription</th>
+                            <th style="text-align:center;color:black;">Date</th>
+                            <th style="text-align:center;color:black;">Enfant</th>
+                            <th style="text-align:center;color:black;">Jardin</th>
+                            <th style="text-align:center;color:black;">Année Scolaire</th>
+                          
+                            <th style="text-align:center;color:black;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th:block th:each="inscription : ${listinscription}">
+                            <tr>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                 <font color=black><b>  [[${inscription.id}]] </b> </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${inscription.date}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${inscription.enfant}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${inscription.kindergarten}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${inscription.anneescolaire}]]</b>  </font>
+                                </td>
+                               
+                       
+                                <td style="text-align:center;">
+                                    <div th:if="${inscription.valid}">
+                                    <a class="btn btn-sm btn-danger" th:href="@{'/director/children/validateinsc/' + ${inscription.id} + '/2'}"><i class="bi bi-download"></i>Invalider</a>
+                                    </div>
+                                    <div th:unless="${inscription.valid}">
+                                        <a class="btn btn-sm btn-success" th:href="@{'/director/children/validateinsc/' + ${inscription.id} + '/1'}"><i class="bi bi-download"></i>Valider</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+</body>
+</html>

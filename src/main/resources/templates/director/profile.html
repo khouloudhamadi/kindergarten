@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.thymeleaf.org">
+
+<head th:replace="/fragments/head.html :: head">
+</head>
+
+<body>
+<script>
+    function valider(){
+   
+        var email = document.getElementById("email_d").value;
+      
+        var nom = document.getElementById("nom_d").value;
+        
+        var prenom = document.getElementById("prenom_d").value;
+        var adresse = document.getElementById("adresse_d").value;
+       
+        var tel = document.getElementById("tel_d").value;
+    
+        
+        if((email.length<=0)||(nom.length<=0)||(prenom.length<=0)||(adresse.length<=0)||(tel.length<=0))
+        {
+          alert("All fields must be filled");
+          return false;
+        }
+        
+        var pwd = document.getElementById("password_d").value;
+        var cpwd = document.getElementById("confirm_password_d").value;
+       
+        if((pwd.length == 0) || (pwd == cpwd)){
+          document.getElementById('fdirector').submit();
+        }
+        else {
+          alert("The password is not confirmed");
+        }
+      }
+    </script>
+  <!-- ======= Top Bar ======= -->
+  <section th:replace="/fragments/topbar.html :: topbar">
+  </section>
+
+  <!-- ======= Header ======= -->
+  <header th:replace="/fragments/header.html :: header">
+  </header><!-- End Header -->
+
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+        <div class="hero-container">
+          <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    
+            <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+    
+            <div class="carousel-inner" role="listbox">
+    
+              <!-- Slide 1 -->
+              <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+                <div class="carousel-container">
+                  <div class="carousel-content">
+                    <div>&nbsp;</div>
+                    <div>&nbsp;</div>
+                    <h2 class="animate__animated animate__fadeInDown"><span>Gestion de</span> Profil</h2>
+              <div class="container" style="width:1000px;">
+     <!--   <div class="card">
+              <div class="card-header"> -->
+                  <div class="row">
+                      <div class="col">
+                          <h3 style="color:white;"><b>Profil </b></h3>
+                      </div>
+                     
+                  </div>
+       <!--       </div>
+              <div class="card-body">
+              -->
+                  <div class="row">
+
+                    <form id="fdirector" th:action="@{/director/profile/save}" th:object="${dinfo}" method="post">
+                      <div class="row">
+                          <div class="col">
+                        <div class="form-group" style="text-align:left;">
+                            <label for="prenom" style="color:white;">Prénom</label>
+                            <input th:field="*{prenom}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="text" placeholder="first name" id="prenom_d">
+                        </div>
+                        <div class="form-group" style="text-align:left;">
+                            <label for="nom" style="color:white;">Nom </label>
+                            <input th:field="*{nom}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="text" placeholder="Last name" id="nom_d">
+                        </div>           
+                    </div>
+                    <div class="col">
+                        <div class="form-group" style="text-align:left;">
+                            <label style="color:white;">Email</label>
+                            <input th:field="*{email}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="email" placeholder="email" id="email_d" readonly>
+                        </div>
+                  
+                        <div class="form-group" style="text-align:left;">
+                            <label style="color:white;">Tel</label>
+                            <input th:field="*{tel}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" placeholder="Tel1" id="tel_d">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                        <div class="form-group" style="text-align:left;">
+                            <label style="color:white;">Adresse</label>
+                            <input  th:field="*{adresse}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"  type="text" placeholder="adress" id="adresse_d">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group" style="text-align:left;">
+                            <label style="color:white;">Mot de Passe</label>
+                            <input th:field="*{password}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="password" placeholder="Do not fill this field if you want keep your old password" id="password_d">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group" style="text-align:left;">
+                            <label style="color:white;">Confirmer Mot de passe</label>
+                            <input  class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="password" placeholder="Confirm your password" id="confirm_password_d">
+                        </div>
+                    </div>
+                    </div>
+                    </div>
+                    <div class="row">
+                        <div>&nbsp;</div>
+
+                        <div> 
+                                <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="valider();">Enregistrer</a>
+                                &nbsp;&nbsp;&nbsp;
+                                <a th:href="@{/}" class="btn-menu animate__animated animate__fadeInUp scrollto">Annuler</a>          
+                        </div>
+                    </div>
+                    </form>
+
+
+
+
+
+             
+              </div>
+          </div>
+        <!--      </div>   -->
+          </div>
+  
+      </div>
+  </div>
+  </div>
+  </section>
+
+
+
+  <div th:replace="/fragments/script.html :: script">
+
+</body>
+
+</html>

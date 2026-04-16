@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.thymeleaf.org">
+
+<head th:replace="/fragments/head.html :: head">
+</head>
+
+<body>
+<script>
+  function valider() {
+    document.getElementById("fkg").submit();
+  }
+</script>
+  <!-- ======= Top Bar ======= -->
+  <section th:replace="/fragments/topbar.html :: topbar">
+  </section>
+
+  <!-- ======= Header ======= -->
+  <header th:replace="/fragments/header.html :: header">
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+    <div class="hero-container">
+      <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+        <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+
+        <div class="carousel-inner" role="listbox">
+
+          <!-- Slide 1 -->
+          <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+            <div class="carousel-container">
+              <div class="carousel-content">
+                <div>&nbsp;</div>
+                <div>&nbsp;</div>
+                <h2 class="animate__animated animate__fadeInDown"><span>Gestion Des</span> Jardins d'Enfant</h2>
+                      <h6 class="animate__animated animate__fadeInDown" style="color:white;"><span style="color:orange;">Directeur du Jardin:</span> [[${directeur.nom}]]  [[${{directeur.prenom}}]]</h6>
+            <form id="fkg" th:action="@{/director/kindergarten/save}" method="post" enctype="multipart/form-data"> 
+                    <div class="container" style="width:1000px;">
+                        <div class="row">
+                            <div class="col">
+                                
+                                    <h4 style="color:white;"><b>Jardin Info </b></h4>
+                                    
+                                    <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
+                                        <table><tr><td>
+                                            <div class="form-group">
+                                                <label style="color:white;">Nom</label>
+                                                <input style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded" type="text" placeholder="KinderGarten Name" name="nom" id="nom" required>
+                                            </div>
+                                          </td><td>
+                                            <div class="form-group">
+                                              <label style="color:white;">Tel</label>
+                                              <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" placeholder="Tel" name="tel" id="tel" required>
+                                            </div>
+                                          </td></tr>
+                                          <tr><td colspan=2>
+                                            <div class="form-group">
+                                                <label style="color:white;">Adresse</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" placeholder="Address" name="adresse" id="adresse" required>
+                                            </div>
+                                          </td></tr>
+                                          <tr><td colspan=2>
+                                            <div class="form-group">
+                                                <label style="color:white;">Email</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="email" placeholder="Email" name="email" id="email" required>
+                                            </div>
+                                          </td></tr></table>
+                                           
+                                        
+                                    </div>
+                            </div>
+                            <div class="col">
+                                <h4 style="color:white"><b>Photos </b></h4>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="container" style="overflow:auto;max-height:200px;text-align:left;">
+                                            <div class="form-group">
+                                                <label>Ajouter fichier (multiple): </label><br/>
+                                                <input type="file" name="photos" multiple="multiple"/>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>&nbsp;</div>
+                                <div>&nbsp;</div>
+                                <div>&nbsp;</div>
+                                <div>&nbsp;</div>
+                              
+                                <div>
+                                    <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="valider();">Enregistrer</a>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <a th:href="@{/director/kindergarten}" class="btn-menu animate__animated animate__fadeInUp scrollto" >Annuler</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>   
+               
+                </form>
+   
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+
+      </div>
+    </div>
+  </section><!-- End Hero -->
+  <div th:replace="/fragments/script.html :: script">
+
+</body>
+
+</html>

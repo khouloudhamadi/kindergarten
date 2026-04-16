@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Paramètre</span> Paiement</h2>
+                  <h6 class="animate__animated animate__fadeInDown" style="color:white;"><span style="color:orange;">Directeur du Jardin:</span> [[${directeur.nom}]]  [[${{directeur.prenom}}]]</h6>
+                  <form id="fpp" th:action="@{/director/paymentParams/save}" th:object="${paymentparams}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    <div class="container" style="width:1000px;">
+                            <div th:if="${paymentparams.id == null}">
+                                <h3 style="color:white;"><b>Ajouter un nouveau paramètre</b></h3>
+                            </div>
+                            <div th:unless="${paymentparams.id == null}">
+                                <h3 style="color:white;"><b>Modifier un paramètre existant</b></h3>
+                            </div> 
+                                      
+                                <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
+                                 <div class="row">
+                                    <div class="col">
+                                              <div class="form-group">
+                                                  <label style="color:white;">Années Scolaire</label>
+                                                  <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{anneescol}" type="text" required>
+                                              </div>
+                                              <div class="form-group">
+                                                <label style="color:white;">Jardin </label>
+                                                <select th:field="*{kindergarten}" class="form-select" >
+                                                    <th:block th:each ="kg: ${listkindergarten}">
+                                                      <option th:value="${kg.id}">[[${kg.nom}]]  [[${kg.adresse}]]</option>
+                                                    </th:bock>
+                                                </select>                                      
+                                            </div>
+
+                                            
+                                        </div>
+                                            <div class="col">
+                                            <div class="form-group">
+                                                <label style="color:white;">Prix (Par Année)</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{price}" type="number" step="0.1" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label style="color:white;">Nombre des Mois </label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{nbMonths}" type="number" required>
+                                            </div>
+                                            <div class="form-group">
+                                              <label style="color:white;">Mois de Départ </label>
+                                              <select th:field="*{startMonth}" class="form-select" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;">
+                                               
+                                                  <option value="1">Janvier</option>
+                                                  <option value="2">Février</option>
+                                                  <option value="3">Mars</option>
+                                                  <option value="4">Avril</option>
+                                                  <option value="5">Mai</option>
+                                                  <option value="6">Juin</option>
+                                                  <option value="7">Juillet</option>
+                                                  <option value="8">Août</option>
+                                                  <option value="9">Septembre</option>
+                                                  <option value="10">Octobre</option>
+                                                  <option value="11">Novembre</option>
+                                                  <option value="12">Decembre</option>
+                                              
+                                            </select>  
+                      
+                                          </div>
+                                        </div>
+                                        </div>
+                                        <div class="row">
+                                        
+                                              <div>&nbsp;</div>
+                                              <div class="form-group">
+                                                <div style="text-align:center;">
+                                                    <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="document.getElementById('fpp').submit();">Valider</a>
+                                                    &nbsp;&nbsp;&nbsp;
+                                                    <a th:href="@{/director/paymentParams}" class="btn-menu animate__animated animate__fadeInUp scrollto">Annuler</a>
+
+                                                </div>
+    
+                                              </div>
+                                            </div>
+                                          
+                                      </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

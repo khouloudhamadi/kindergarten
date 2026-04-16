@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+            
+                  <h2 class="animate__animated animate__fadeInDown"><span>Paramètres</span> Paiement</h2>
+                  <h6 class="animate__animated animate__fadeInDown" style="color:white;"><span style="color:orange;">Directeur du Jardin:</span> [[${directeur.nom}]]  [[${{directeur.prenom}}]]</h6>
+            <div class="container" style="width:1000px;">
+   <!--   <div class="card">
+            <div class="card-header"> -->
+                <div class="row">
+                    <div class="col">
+                        <h3 style="color:white;"><b>Les Paramètres de paiement</b></h3>
+                    </div>
+                    <div class="col" style="text-align:right;">
+                        <a class="btn btn-success" th:href="@{/director/paymentParams/new}">Ajouter un paramètre de paiement</a>
+                    </div>
+                </div>
+     <!--       </div>
+            <div class="card-body">
+            -->
+                <div class="row">
+                <div class="container" style="overflow:auto;max-height:400px;">
+                <table class="table table-bordered table-hover">
+                    <thead style="background-color:#E6EEF0">
+                        <tr>
+                            <th style="text-align:center;color:black;">ID</th>
+                            <th style="text-align:center;color:black;">Années Scolaire</th>
+                            <th style="text-align:center;color:black;">Jardin</th>
+                       
+                            <th style="text-align:center;color:black;">Prix</th>
+                            <th style="text-align:center;color:black;">Nombre de mois</th>
+                            <th style="text-align:center;color:black;">Mois de Départ</th>
+                            <th style="width:20%;text-align:center;color:black;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th:block th:each="paymentparam : ${listpaymentparams}">
+                            <tr>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                 <font color=black><b>  [[${paymentparam.id}]] </b> </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${paymentparam.anneescol}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${paymentparam.kindergarten}]]</b>  </font>
+                                </td>
+                               
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${paymentparam.price}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${paymentparam.nbMonths}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${paymentparam.startMonth}]]</b>  </font>
+                                </td>
+                                <td style="text-align:center;">
+                                    <a class="btn btn-sm btn-warning" th:href="@{'/director/paymentParams/edit/' + ${paymentparam.id}}"><i class="bi bi-pen">Modifier</i></a>
+                                    &nbsp;
+                                    <a class="btn btn-sm btn-danger" th:href="@{'/director/paymentParams/delete/' + ${paymentparam.id}}"><i class="bi bi-trash"></i>Supprimer</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+</body>
+</html>

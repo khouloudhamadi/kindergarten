@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+    <script>
+      var payClicked = false;
+      function payInscription() {
+        montant=0.0;
+        idMonths = "";
+        tb=document.getElementById("tb");
+        rows = tb.rows;
+        ok=true;
+        for(i=0;i<rows.length;i++) {
+          divpay = rows[i].cells[5].children[0].children[0];
+          if(!divpay) {
+            continue;
+          }
+          else {
+            chkpay = divpay.children[0];
+            if(!chkpay) {
+              continue;
+            }
+            else {
+              if(chkpay.checked) {
+                if(ok) {
+                montducell = rows[i].cells[1].children[0];
+                montant = montant + montducell.innerHTML*1;
+                if(idMonths.length == 0)
+                  idMonths = chkpay.id;
+                else
+                  idMonths = idMonths + "@" + chkpay.id;
+                }
+                else {
+                  alert("You must check to pay the previous months first")
+                  return false;
+                }
+              }
+              else {
+                ok=false;
+              }
+          }
+        }
+          
+        }
+        if(montant > 0) {
+          document.getElementById("amount").value = montant;
+          document.getElementById("months").value = idMonths;
+          const arr_months = idMonths.split("@");
+          document.getElementById("amountpermonth").value = montant/arr_months.length;
+          smonths = "";
+          for(i=0;i<arr_months.length;i++) {
+            mth = arr_months[i].substring(2,arr_months[i].length)*1;
+            switch(mth) {
+              case 1:
+              smonths = smonths + " " + "January";
+              break;
+              case 2:
+              smonths = smonths + " " + "Febrary";
+              break;
+              case 3:
+              smonths = smonths + " " + "March";
+              break;
+              case 4:
+              smonths = smonths + " " + "April";
+              break;
+              case 5:
+              smonths = smonths + " " + "Mai";
+              break;
+              case 6:
+              smonths = smonths + " " + "June";
+              break;
+              case 7:
+              smonths = smonths + " " + "July";
+              break;
+              case 8:
+              smonths = smonths + " " + "August";
+              break;
+              case 9:
+              smonths = smonths + " " + "September";
+              break;
+              case 10:
+              smonths = smonths + " " + "October";
+              break;
+              case 11:
+              smonths = smonths + " " + "November";
+              break;
+              case 12:
+              smonths = smonths + " " + "December";
+              break;
+            }
+
+          }
+          document.getElementById("monthNames").value = smonths;
+          payClicked = true;
+          return true;
+        }
+        else {
+          alert("vous n avez pas choisi les tranches à payer");
+          return false;
+        }
+      }
+
+      function makeid(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+          counter += 1;
+        }
+        return result;
+      }
+
+      function savePayment(){
+        if (!payClicked) {
+          alert("Il faut cliquer sur le bouton Paiement");
+          return false;
+        }
+        var cardnumber = document.getElementById("cardnumber").value;
+        var cardcode = document.getElementById("cardcode").value;
+        var expiryyear = document.getElementById("expiryyear").value;
+        if((cardnumber.length <= 0)){
+          alert("Le numéro de la carte est obligatoire");
+          return false;
+        }
+        if((cardcode.length <= 0)){
+          alert("Le code de la carte est obligatoire");
+          return false;
+        }
+        if((expiryyear.length <= 0)){
+          alert("l année d'expiration est obligatoire");
+          return false;
+        }
+        var reference = makeid(8);
+        document.getElementById("reference").value=reference;
+        document.getElementById("idinsc").value = document.getElementById("idinscselected").value;
+        document.getElementById("fpayreference").submit();
+      }
+    </script>
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+            <div class="container" style="width:1000px;">
+
+                <div class="row" style="text-align:left;">
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Parent  : </span>[[${parent.nom}]] [[${parent.prenom}]] </b></h5>
+                  </div>
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Enfant       : </span> [[${inscription.enfant}]]  </b></h5>  
+                  </div>
+                </div>
+
+                <div class="row" style="text-align:left;">
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Année Scolaire : </span>  [[${inscription.anneescolaire}]] </b> </h5>
+                  </div>
+                  
+                </div>
+
+                <div class="row" style="text-align:left;">
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Jardin: </span> [[${inscription.kindergarten}]] </b></h5>
+                  </div>
+                  <div class="col" style="text-align:right">
+                    <a href="#menu" class="btn btn-success" onClick="payInscription();return true;">Paiement</a>
+                  </div>
+                </div>
+                <div>&nbsp;</div>
+
+                <input type="hidden" id = "idinscselected" th:value="${inscription.id}">
+
+
+
+                
+                <div class="row">
+              
+                      <table class="table table-bordered table-hover">
+                        <thead style="background-color:#E6EEF0">
+                        <tr>
+                          <th>Mois</th>
+                          <th>Montant</th>
+                          <th>Montant Perçu</th>
+                          <th>Date</th>
+                          <th>Références de Paiement</th>
+                          <th>Séléctionner à payer</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tb">
+                        <th:block th:each="pay : ${payments}">
+                          <tr>
+                            <td style="color:orange"><b>
+                              <div th:if="${pay.monthnumber} eq 1">
+                                Janvier
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 2">
+                                Février
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 3">
+                                Mars
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 4">
+                                Avril
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 5">
+                                Mai
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 6">
+                                Juin
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 7">
+                                Juillet
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 8">
+                                Août
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 9">
+                                Septembre
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 10">
+                                Octobre
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 11">
+                                Novembre
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 12">
+                                Decembre
+                              </div>
+
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.montant_du}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.montant_percu}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.date_payment}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.reference_payment}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              <div th:if="${pay.montant_percu} eq 0">
+                                <input th:id="${'id'+pay.monthnumber}" class="form-check-input" type="checkbox" th:value="${pay.monthnumber}" >     
+                              </div>
+                            </b></td>
+                          </tr>
+                        </th:block>
+                      </tbody>
+                      </table>
+                    
+                </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+
+
+
+<main id="main">
+  <section id="menu" class="menu">
+    <div class="container">
+
+      <div class="section-title">
+        <h2>Payer l'Inscription <span>De Votre Enfant</span></h2>
+      </div>
+      <FORM id="fpayreference" th:action="@{/parent/payment/pay/save}" th:object="${payreference}" method="POST">
+        <input type="hidden" id = "amountpermonth" th:field="*{amountpermonth}">
+        <input type="hidden" id = "months" th:field="*{months}">
+        <input type="hidden" id = "reference" th:field="*{reference}">
+        <input type="hidden" id = "idinsc" th:field="*{idinsc}">
+      </FORM>
+
+      <div class="row menu-container">
+
+        <div class="col-lg-6 menu-item filter-starters">
+          <div class="menu-content">
+            <a href="#">Montant à Payer</a><span><input class="form-control" type="text" id="amount" readonly ></span>
+          </div>
+          <div class="menu-ingredients">
+            Montant à payer l'inscription
+          </div>
+        </div>
+
+        <div class="col-lg-6 menu-item filter-specialty">
+          <div class="menu-content">
+            <a href="#">Mois :</a><span><input class="form-control" type="text" id = "monthNames" readonly></span>
+          </div>
+          <div class="menu-ingredients">
+           Mois concernés par ce Paiement
+          </div>
+        </div>
+
+   
+        <div class="col-lg-6 menu-item filter-specialty">
+          <div class="menu-content">
+            <a href="#">Nom</a><span><input class="form-control" type="text" th:value="${parent.nom}" readonly></span>
+          </div>
+          <div class="menu-ingredients">
+            Nom
+          </div>
+        </div>
+
+        <div class="col-lg-6 menu-item filter-specialty">
+          <div class="menu-content">
+            <a href="#">Prénom</a><span><input class="form-control" type="text" th:value="${parent.prenom}" readonly></span>
+          </div>
+          <div class="menu-ingredients">
+            Prénom
+          </div>
+        </div>
+
+        <div class="col-lg-6 menu-item filter-starters">
+          <div class="menu-content">
+            <a href="#">Carte Numéro</a><span><input class="form-control" type="number" id = "cardnumber" required></span>
+          </div>
+          <div class="menu-ingredients">
+            Numéro de la carte bancaire
+          </div>
+        </div>
+
+        <div class="col-lg-6 menu-item filter-salads">
+          <div class="menu-content">
+            <a href="#">carte Code</a><span><input class="form-control" type="number" id = "cardcode" placeholder="Card Code" required></span>
+          </div>
+          <div class="menu-ingredients">
+            carte Code (4 digits)
+          </div>
+        </div>
+      
+
+        <div class="col-lg-6 menu-item filter-salads">
+          <div class="menu-content">
+            <a href="#">Mois d'expiration</a><span>
+              <select  id = "expirymonth" class="form-select" >
+                  <option value="1" selected>Janvier</option>
+                  <option value="2" >Février</option>
+                  <option value="3" >Mars</option>
+                  <option value="4" >Avril</option>
+                  <option value="5" >Mai</option>
+                  <option value="6" >Juin</option>
+                  <option value="7" >Juillet</option>
+                  <option value="8" >Août</option>
+                  <option value="9" >Septembre</option>
+                  <option value="10" >Octobre</option>
+                  <option value="11" >Novembre</option>
+                  <option value="12" >Decembre</option>
+            </select>      
+          </div>
+          <div class="menu-ingredients">
+            Mois d'expriration de la carte
+          </div>
+        </div>
+
+
+        <div class="col-lg-6 menu-item filter-salads">
+          <div class="menu-content">
+            <a href="#">Année d'expiration</a><span><input class="form-control" type="number" id = "expiryyear" placeholder="Expiry Year" required></span>
+          </div>
+          <div class="menu-ingredients">
+            Année d'expriration de la carte
+          </div>
+        </div>
+
+   
+
+
+      </div>
+
+      <div>&nbsp;</div>
+      <div>&nbsp;</div>
+      <div>&nbsp;</div>
+
+      <div class="row">
+        <div class="col-lg-12 d-flex justify-content-center">
+        <ul id="menu-flters">
+          <li data-filter="*" class="filter-starters" onClick="savePayment();">Valider le Paiement</li>
+          <li  data-filter=".filter-starters"><a href="#hero">Annuler</a></li>
+        </ul>
+        </div>
+      </div>
+
+
+      
+      <div>&nbsp;</div>
+      <div>&nbsp;</div>
+    
+
+
+
+    </div>
+  </section><!-- End Menu Section -->
+</main>
+
+
+
+</body>
+</html>

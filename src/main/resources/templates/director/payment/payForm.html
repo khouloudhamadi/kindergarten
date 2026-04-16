@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+    <script>
+      function payInscription() {
+        montant=0.0;
+        idMonths = "";
+        tb=document.getElementById("tb");
+        rows = tb.rows;
+        ok=true;
+        for(i=0;i<rows.length;i++) {
+          divpay = rows[i].cells[5].children[0].children[0];
+          if(!divpay) {
+            continue;
+          }
+          else {
+            chkpay = divpay.children[0];
+            if(!chkpay) {
+              continue;
+            }
+            else {
+              if(chkpay.checked) {
+                if(ok) {
+                montducell = rows[i].cells[1].children[0];
+                montant = montant + montducell.innerHTML*1;
+                if(idMonths.length == 0)
+                  idMonths = chkpay.id;
+                else
+                  idMonths = idMonths + "@" + chkpay.id;
+                }
+                else {
+                  alert("You must check to pay the previous months first")
+                  return false;
+                }
+              }
+              else {
+                ok=false;
+              }
+          }
+        }
+          
+        }
+        if(montant > 0) {
+          document.getElementById("amount").value = montant;
+          document.getElementById("months").value = idMonths;
+          const arr_months = idMonths.split("@");
+          document.getElementById("amountpermonth").value = montant/arr_months.length;
+          smonths = "";
+          for(i=0;i<arr_months.length;i++) {
+            mth = arr_months[i].substring(2,arr_months[i].length)*1;
+            switch(mth) {
+              case 1:
+              smonths = smonths + " " + "January";
+              break;
+              case 2:
+              smonths = smonths + " " + "Febrary";
+              break;
+              case 3:
+              smonths = smonths + " " + "March";
+              break;
+              case 4:
+              smonths = smonths + " " + "April";
+              break;
+              case 5:
+              smonths = smonths + " " + "Mai";
+              break;
+              case 6:
+              smonths = smonths + " " + "June";
+              break;
+              case 7:
+              smonths = smonths + " " + "July";
+              break;
+              case 8:
+              smonths = smonths + " " + "August";
+              break;
+              case 9:
+              smonths = smonths + " " + "September";
+              break;
+              case 10:
+              smonths = smonths + " " + "October";
+              break;
+              case 11:
+              smonths = smonths + " " + "November";
+              break;
+              case 12:
+              smonths = smonths + " " + "December";
+              break;
+            }
+
+          }
+          document.getElementById("monthNames").value = smonths;
+    
+          return true;
+        }
+        else {
+          alert("There is no amount to percept");
+          return false;
+        }
+      }
+
+      function makeid(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+          counter += 1;
+        }
+        return result;
+      }
+
+      function savePayment(){
+        var cardnumber = document.getElementById("cardnumber").value;
+        var cardcode = document.getElementById("cardcode").value;
+        var expiryyear = document.getElementById("expiryyear").value;
+        if((cardnumber.length <= 0)){
+          alert("The Card Number Is Required");
+          return false;
+        }
+        if((cardcode.length <= 0)){
+          alert("The Card Code Is Required");
+          return false;
+        }
+        if((expiryyear.length <= 0)){
+          alert("The Expiry Year Is Required");
+          return false;
+        }
+        var reference = makeid(8);
+        document.getElementById("reference").value=reference;
+        document.getElementById("idinsc").value = document.getElementById("idinscselected").value;
+        document.getElementById("fpayreference").submit();
+      }
+    </script>
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+            <div class="container" style="width:1000px;">
+
+                <div class="row" style="text-align:left;">
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Parent  : </span>[[${parent.nom}]] [[${parent.prenom}]] </b></h5>
+                  </div>
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Enfant       : </span> [[${inscription.enfant}]]  </b></h5>  
+                  </div>
+                </div>
+
+                <div class="row" style="text-align:left;">
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Années Scolaire : </span>  [[${inscription.anneescolaire}]] </b> </h5>
+                  </div>
+                 
+                </div>
+
+                <div class="row" style="text-align:left;">
+                  <div class="col">
+                    <h5 style="color:white;"> <b> <span style="color:orange;">Jardin: </span> [[${inscription.kindergarten}]] </b></h5>
+                  </div>
+                </div>
+                <div>&nbsp;</div>
+
+                <input type="hidden" id = "idinscselected" th:value="${inscription.id}">
+       
+                <div class="row">
+              
+                      <table class="table table-bordered table-hover">
+                        <thead style="background-color:#E6EEF0">
+                        <tr>
+                          <th>Mois</th>
+                          <th>montant</th>
+                          <th>Amount Perçu</th>
+                          <th>Date</th>
+                          <th>Références de paiement</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tb">
+                        <th:block th:each="pay : ${payments}">
+                          <tr>
+                            <td style="color:orange"><b>
+                              <div th:if="${pay.monthnumber} eq 1">
+                                Janvier
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 2">
+                                Février
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 3">
+                                Mars
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 4">
+                                Avril
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 5">
+                                Mai
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 6">
+                                Juin
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 7">
+                                Juillet
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 8">
+                                Août
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 9">
+                                Septembre
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 10">
+                                Octobre
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 11">
+                                Novembre
+                              </div>
+                              <div th:if="${pay.monthnumber} eq 12">
+                                Decembre
+                              </div>
+
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.montant_du}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.montant_percu}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.date_payment}]]
+                            </b></td>
+                            <td style="color:white"><b>
+                              [[${pay.reference_payment}]]
+                            </b></td>
+                          </tr>
+                        </th:block>
+                      </tbody>
+                      </table>
+                    
+                </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+
+
+</body>
+</html>

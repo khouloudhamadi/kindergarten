@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.thymeleaf.org">
+
+<head th:replace="/fragments/head.html :: head">
+</head>
+
+<body>
+<script>
+  function valider() {
+    var pwd = document.getElementById("password").value;
+    var cpwd = document.getElementById("confirm_password").value;
+    if(pwd == cpwd)
+      document.getElementById('faccount').submit();
+    else {
+      alert("The password is not confirmed");
+    }
+  }
+</script>
+  <!-- ======= Top Bar ======= -->
+  <section th:replace="/fragments/topbar.html :: topbar">
+  </section>
+
+  <!-- ======= Header ======= -->
+  <header th:replace="/fragments/header.html :: header">
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+    <div class="hero-container">
+      <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+        <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+
+        <div class="carousel-inner" role="listbox">
+
+          <!-- Slide 1 -->
+          <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+            <div class="carousel-container">
+              <div class="carousel-content">
+                <div>&nbsp;</div>
+                <div>&nbsp;</div>
+                <h2 class="animate__animated animate__fadeInDown"><span>Gestion</span> Des Comptes</h2>
+                <form id="faccount" th:action="@{/compte/save}" th:object="${compte}" method="post">
+                    <input type="hidden" th:field="*{type}" th:value="${compte.type}">
+                    <div class="container" style="width:1000px;">
+                        <div class="row">
+                            <div class="col">
+                                
+                                    <h4 style="color:white;"><b>Compte Info </b></h4>
+                                    
+                                    <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
+                               
+                                            <div class="form-group">
+                                                <label style="color:white;">Email</label>
+                                                <input style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded" th:field="*{email}" type="email" placeholder="useradress@mail.com" id="email" required>
+                                            </div>
+                                            <div>&nbsp;</div>
+                                            <div class="form-group">
+                                                <label style="color:white;">Mot de Passe</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{password}" type="password" placeholder="password" id="password" required>
+                                            </div>
+                                            <div>&nbsp;</div>
+                                            <div class="form-group">
+                                                <label style="color:white;">Confirmer Mot de Passe</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{confirm_password}" type="password" placeholder="Confirm Password" id="confirm_password" required>
+                                            </div>
+                                            <div>&nbsp;</div>
+                                            <div class="form-group">
+                                                <input class="form-check-input" th:field="*{enabled}" type="checkbox">
+                                                <label style="color:white;"class="form-check-label">Activer Compte</label>
+                                            </div>
+                                        
+                                    </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <div>&nbsp;</div>
+                    <div>
+                        <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="valider();">Enregistrer</a>
+                        &nbsp;&nbsp;&nbsp;
+                        <a th:href="@{/compte}" class="btn-menu animate__animated animate__fadeInUp scrollto"><b>Annuler</b></a>
+                    </div>
+               
+               
+               
+                </form>
+   
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+
+      </div>
+    </div>
+  </section><!-- End Hero -->
+  <div th:replace="/fragments/script.html :: script">
+
+</body>
+
+</html>

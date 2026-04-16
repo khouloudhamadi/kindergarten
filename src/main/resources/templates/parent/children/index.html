@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Gestion des</span> Enfants</h2>
+            <div class="container" style="width:1000px;">
+   <!--   <div class="card">
+            <div class="card-header"> -->
+                <div class="row">
+                    <div class="col">
+                        <h3 style="color:white;"><b>Les Enfants </b></h3>
+                    </div>
+                    <div class="col" style="text-align:right;">
+                        <a class="btn btn-success" th:href="@{/parent/children/add}">Ajouter un Enfant</a>
+                    </div>
+                </div>
+     <!--       </div>
+            <div class="card-body">
+            -->
+                <div class="row">
+                <div class="container" style="overflow:auto;max-height:400px;">
+                <table class="table table-bordered table-hover">
+                    <thead style="background-color:#E6EEF0">
+                        <tr>
+                            <th style="text-align:center;color:black;">ID Enfant</th>
+                            <th style="text-align:center;color:black;">Prénom</th>
+                            <th style="text-align:center;color:black;">Nom</th>
+                            <th style="text-align:center;color:black;">Sexe</th>
+                            <th style="text-align:center;color:black;">Date de Naissance</th>
+                            <th style="text-align:center;color:black;">Etat de Santé</th>
+                            <th style="text-align:center;color:black;">Actions</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th:block th:each="child : ${children}">
+                            <tr>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                 <font color=black><b>  [[${child.id}]] </b> </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${child.prenom}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${child.nom}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${child.sexe}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${child.datenais}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${child.etatsante}]]</b>  </font>
+                                </td>
+                                <td style="text-align:center;">
+                                    <a class="btn btn-sm btn-warning" th:href="@{'/parent/children/edit/' + ${child.id}}"><i class="bi bi-pen">Modifier Profil</i></a>
+                                    &nbsp;
+                                    <a class="btn btn-sm btn-danger" th:href="@{'/parent/children/delete/' + ${child.id}}"><i class="bi bi-trash"></i>Supprimer</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+</body>
+</html>

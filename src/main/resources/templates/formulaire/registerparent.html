@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+  
+   
+    <script type="text/javascript">
+
+
+
+  function valider_parent_ok(){
+    var email = document.getElementById("email").value;
+  
+    var nom = document.getElementById("nom").value;
+    
+    var prenom = document.getElementById("prenom").value;
+    var adresse = document.getElementById("adresse").value;
+   
+    var tel1 = document.getElementById("tel1").value;
+    var tel2 = document.getElementById("tel2").value;
+   
+   
+    
+    var pwd = document.getElementById("password").value;
+    var cpwd = document.getElementById("confirm_password").value;
+   
+    if(pwd == cpwd){
+
+      document.getElementById('fparent').submit();
+    }
+    else {
+      alert("Le Mot de passe n'est pas confirmé");
+    }
+  }
+  function valider_director_ok(){
+   
+    var email = document.getElementById("email_d").value;
+  
+    var nom = document.getElementById("nom_d").value;
+    
+    var prenom = document.getElementById("prenom_d").value;
+    var adresse = document.getElementById("adresse_d").value;
+   
+    var tel = document.getElementById("tel_d").value;
+
+    
+    
+    var pwd = document.getElementById("password_d").value;
+    var cpwd = document.getElementById("confirm_password_d").value;
+   
+    if(pwd == cpwd){
+      document.getElementById('fdirector').submit();
+    }
+    else {
+      alert("Le Mot de passe n'est pas confirmé");
+    }
+  }
+</script>
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <section id="hero">
+        <div class="hero-container">
+          <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    
+            <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+    
+            <div class="carousel-inner" role="listbox">
+    
+              <!-- Slide 1 -->
+              <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+                <div class="carousel-container">
+                  <div class="carousel-content">
+
+                    <div class="container">
+                        <h3 class="animate__animated animate__fadeInDown" style="color:white;"><span><b>S'inscrire en tant que PARENT / DIRECTEUR</b></span></h3>
+                        
+                        <ul class="nav nav-tabs">
+                          <li class="active"><a data-toggle="tab" href="#parent" style="color:orange;"><b>Parent</b></a></li>
+                          <li><a data-toggle="tab" href="#kgdirector" style="color:orange;"><b>Directeur du Jardin</b></a></li>
+    
+                        </ul>
+                      
+                        <div class="tab-content">
+       
+
+                          <div id="parent" class="tab-pane fade in active text-center">
+
+                           <table><tr><td style="width:75%"> 
+
+                            <form id="fparent" th:action="@{/parent/register}" th:object="${parentinfo}" method="post">
+                                <div>&nbsp;</div>
+                               
+                                <table style="width:1000px;"><tr>
+                                    <td >
+                                <div class="form-group" style="text-align:left;">
+                                    <label for="prenom" style="color:white;">Prénom</label>
+                                    <input th:field="*{prenom}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="text" placeholder="Prénom" id="prenom" required>
+                                </div>
+                                <div class="form-group" style="text-align:left;">
+                                    <label for="nom" style="color:white;">Nom</label>
+                                    <input th:field="*{nom}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="text" placeholder="Nom" id="nom" required>
+                                </div>
+                              
+                                <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Email</label>
+                                    <input th:field="*{email}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="email" placeholder="email" id="email" name="email" required>
+                                 </div>
+                            </td>
+                            <td style="padding:10px;">&nbsp;</td>
+
+                            <td >
+                                <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Adresse</label>
+                                    <input th:field="*{adresse}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"  type="text" placeholder="adresse" id="adresse" required>
+                                </div>
+                                 <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Tel1</label>
+                                    <input th:field="*{tel1}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" placeholder="Tel1" id="tel1" required>
+                                 </div>
+                                 <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Tel2</label>
+                                    <input th:field="*{tel2}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" placeholder="Tel2" id="tel2" required>
+                                 </div>
+
+                            </td>
+                            <td style="padding:10px;">&nbsp;</td>
+
+                            <td>
+                                
+                               
+                                  <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Mot de Passe</label>
+                                    <input th:field="*{password}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="password" placeholder="Mot de Passe" id="password" required>
+                                 </div>
+                                 <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Confirmer Mot de Passe</label>
+                                    <input class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="password" placeholder="confirm Mot de Passe" id="confirm_password" required>
+                                 </div>
+                                 <div style="text-align:left;">
+                                 <div class="form-check">
+                                    <label class="form-check-label">
+                                      <input th:field="*{sexe}" type="radio"  class="form-check-input" name="optradio" value="Homme"><font color="white"><b>Homme&nbsp;</b></font>
+                                      
+                                    </label>
+                                  </div>
+                                  <div class="form-check">
+                                    <label class="form-check-label">
+                                      <input th:field="*{sexe}" type="radio" class="form-check-input" name="optradio" value="Femme"><font color="white"><b>Femme</b></font>
+                                    </label>
+                                  </div>
+                                  <div >&nbsp;</div>
+                                </div>
+                            </td>
+                        </tr>
+                    
+
+                    </table>
+                    <div>&nbsp;</div>
+                    <div>&nbsp;</div>
+                    <div>
+                      <table><tr><td>
+                   
+                      
+                      </td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>
+   
+                    </td></tr></table>
+                    </div>
+                    <div> 
+                        
+                        <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="valider_parent_ok();">S'inscrire</a>
+                       &nbsp;&nbsp;&nbsp;
+                       <a th:href="@{/}" class="btn-menu animate__animated animate__fadeInUp scrollto">Annuler</a>
+                    </div>
+               
+                    
+                    </form>
+                  </td>
+                  <td style="width:25%;vertical-align: text-top; padding-top:45px;">
+                           
+                          </td>
+                        </tr>
+                      </table>
+                      </div>
+
+
+
+                          <div id="kgdirector" class="tab-pane fade">
+                       <table>
+                        <tr>
+                          <td style="width:75%;">      
+                            <form id="fdirector" th:action="@{/director/register}" th:object="${dinfo}" method="post">
+                                <div>&nbsp;</div>
+                               
+                                <table style="width:1000px;"><tr>
+                                    <td >
+                                <div class="form-group" style="text-align:left;">
+                                    <label for="prenom" style="color:white;">Prénom</label>
+                                    <input th:field="*{prenom}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="text" placeholder="Prénom" id="prenom_d" required>
+                                </div>
+                                <div class="form-group" style="text-align:left;">
+                                    <label for="nom" style="color:white;">Nom</label>
+                                    <input th:field="*{nom}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="text" placeholder="nom" id="nom_d" required>
+                                </div>           
+                 
+                            </td>
+                            <td style="padding:10px;">&nbsp;</td>
+
+                            <td >
+                              <div class="form-group" style="text-align:left;">
+                                <label style="color:white;">Email</label>
+                                <input th:field="*{email}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="email" placeholder="email" id="email_d" required>
+                             </div>
+                                 <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Tel</label>
+                                    <input th:field="*{tel}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" placeholder="Tel1" id="tel_d" required>
+                                 </div>
+                               
+                 
+                                </td>
+
+                                <td>
+             
+                                  <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Mot de Passe</label>
+                                    <input th:field="*{password}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="password" placeholder="Mot de Passe" id="password_d" required>
+                                 </div>
+                                 <div class="form-group" style="text-align:left;">
+                                    <label style="color:white;">Confirmer Mot de Passe</label>
+                                    <input  class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="password" placeholder="confirmer Mot de Passe" id="confirm_password_d" required>
+                                 </div>
+
+                                </td>
+                        </tr>
+                    <tr>
+                      <td colspan=4>
+                        <div class="form-group" style="text-align:left;">
+                          <label style="color:white;">Adresse</label>
+                          <input  th:field="*{adresse}" class="form-control" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"  type="text" placeholder="adresse" id="adresse_d" required>
+                        </div>
+                      </td>
+                    </tr>
+
+                    </table>
+                    <div>&nbsp;</div>
+                    <div>&nbsp;</div>
+
+                    <div> 
+                        <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="valider_director_ok();">S'inscrire</a>
+                        &nbsp;&nbsp;&nbsp;
+                        <a th:href="@{/}" class="btn-menu animate__animated animate__fadeInUp scrollto">Annuler</a>
+                       
+                    </div>
+               
+                    
+                            </form>
+                          
+                          </td>
+
+                          <td style="width:25%;vertical-align: text-top; padding-top:45px;">
+                         
+                          </td>
+                        </tr>
+                      </table>
+
+
+
+
+
+
+                          </div>
+                        
+                        </div>
+                      </div>
+                      
+
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
+<div th:replace="/fragments/script.html :: script"></div>
+-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>   
+  
+</body>
+
+</html>
+

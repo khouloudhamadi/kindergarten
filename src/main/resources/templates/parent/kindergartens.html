@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.thymeleaf.org">
+
+<head th:replace="/fragments/head.html :: head">
+</head>
+
+<body>
+
+
+  <!-- ======= Top Bar ======= -->
+  <section th:replace="/fragments/topbar.html :: topbar">
+  </section>
+
+  <!-- ======= Header ======= -->
+  <header th:replace="/fragments/header.html :: header">
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  
+<div class="container">
+  <main id="main">
+  
+
+
+    <!-- ======= Whu Us Section ======= -->
+    <section id="kinder" class="why-us">
+        <div class="container">
+  
+          <div class="section-title">
+            <h3>Les Jardins d'Enfant<span> Sur Notre Platfrome</span></h3>
+            <p>Choisir un jardin pour inscrire votre enfant.</p>
+          </div>
+
+
+       <!--  <div class="row"> -->
+        <table class="table">
+            <th:block th:each="kgwithphotos,iter : ${listKGwithPhotos}">
+              <!-- <div class="col-lg-3"> -->
+                <th:block th:if="${iter.index % 3 == 0}"> 
+                <tr>
+                </th:block>
+                  <td style="width:340px;">
+
+                    <div class="box" style="width:340px;height:340px;">
+                        <table>
+                          <tr>
+                        <th:block th:each="photo : ${kgwithphotos.photos}">
+                          <td>
+                            <div class="col-lg-8 col-md-10">
+                                <div class="gallery-item">
+                                    <a href="#" class="gallery-lightbox">
+                                        <img class="img-fluid rounded-circle" th:id="${'img_' + iter.index}" style="width:130px;" th:src="${'data:image/' + photo.type + ';charset=utf-8;base64,' + photo.dataB64}" alt="" onMouseOver="document.getElementById('display'+this.id).src=this.src;" onMouseOut="document.getElementById('display'+this.id).src='';">
+                                    </a>
+                                </div>
+                            </div>
+                          </td>
+                        </th:block>
+                      </tr>
+                    </table>
+                        <h6><b>Jardin [[${kgwithphotos.nom}]]<b></h6>
+                
+                        <p style="font-size:13px;">Adresse: [[${kgwithphotos.adresse}]]</p>
+                         <table><tr><td>
+                        <h6>Directeur: [[${kgwithphotos.directorfirstname}]] [[${kgwithphotos.directorlastname}]] </h6>
+                         </td><td>
+                        <span style="font-size:13px;"><i class="bi bi-phone">[[${kgwithphotos.tel}]]</i></span>
+                         </td></tr></table>
+                         <div style="width:100%;text-align:center">
+                        <img width="230px;" src="" th:id="${'displayimg_' + iter.index}"/>
+                         </div>
+                      </div>
+
+                  </td>
+                  <th:block th:if="${iter.index == iter.size AND iter.size % 3 == 1}">
+                     <td style="width:340px;">&nbsp;</td><td style="width:340px;">&nbsp;</td> 
+                  </th:block>
+                  <th:block th:if="${iter.index == iter.size AND iter.size % 3 == 2}">
+                     <td style="width:340px;">&nbsp;</td>
+                 </th:block>
+                <th:block th:if="${iter.index % 3 == 2 OR iter.index == iter.size}"> 
+                </tr>
+               </th:block>                 
+               <!-- </div> -->
+           </th:block>
+          </table>
+  
+         <!-- </div> -->
+  
+        </div>
+      </section>
+      <!-- End Whu Us Section -->
+  
+      
+  </main>
+</div>
+
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+<div th:replace="/fragments/script.html :: script"></div>
+
+</body>
+
+</html>

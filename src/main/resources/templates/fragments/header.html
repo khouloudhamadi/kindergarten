@@ -1,0 +1,113 @@
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
+
+      <div class="logo me-auto">
+        <h1><a th:href="index.html">Happy Kiddos</a></h1>
+        <!-- Uncomment below if you prefer to use an image logo -->
+        <!-- <a th:href="index.html"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
+      </div>
+      <th:block th:if="${currentuser == null}">
+        <div>
+          <nav id="navbar" class="navbar order-last order-lg-0">
+            <ul>
+                <li><a class="nav-link scrollto active" th:href="@{/}">Accuiel</a></li>
+                <li><a class="nav-link scrollto" href="#kinder">Les Jardins</a></li>
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+          </nav><!-- .navbar -->
+        </div>
+      </th:block>
+      <th:block th:unless="${currentuser == null}">
+
+
+      <div th:switch="${currentuser.type}">
+        <div th:case="'Admin'"> 
+
+            <nav id="navbar" class="navbar order-last order-lg-0">
+              <ul>
+                  <li><a class="nav-link scrollto active" th:href="@{/}">Accuiel</a></li>
+                  <li><a class="nav-link scrollto" href="#kinder">Les Jardins</a></li>
+                  <li class="dropdown"><a href="#"><span>Administrateur</span> <i class="bi bi-chevron-down"></i></a>
+                      <ul>
+                          <li><a th:href="@{/compte}">Gestion des Comptes</a></li>
+                      </ul>
+                  </li>
+              </ul>
+              <i class="bi bi-list mobile-nav-toggle"></i>
+              <form id="flogout" th:action="@{/logout}" method="post">
+                <a  class="book-a-table-btn scrollto" style="width:140px;font-size:12px;" onClick="document.getElementById('flogout').submit();"><b> Déconnecter</b></a>
+            </form>
+            </nav><!-- .navbar -->
+
+        </div>
+
+
+        <div th:case="'Parent'"> 
+            
+          <nav id="navbar" class="navbar order-last order-lg-0">
+            <ul>
+                <li><a class="nav-link scrollto active" th:href="@{/}">Accuiel</a></li>
+                <li><a class="nav-link scrollto" th:href="@{/parent/profile/myProfile}">Mon Profil</a></li>
+              
+              <li class="dropdown"><a href="#"><span>Mes Enfants</span> <i class="bi bi-chevron-down"></i></a>
+                <ul>
+                  <li><a class="nav-link scrollto" th:href="@{/parent/children}">Enfants</a></li>
+                  
+                  <li><a class="nav-link scrollto" th:href="@{/parent/registeredChildren}">Enfants Enregistrés</a></li>
+                  
+                  <li><a class="nav-link scrollto" th:href="@{/parent/children/unenroll}">Annuler l'Enregistrement des Enfants</a></li>
+                </ul>
+              </li>
+              <li><a class="nav-link scrollto" th:href="@{/parent/payment}">Paiement</a></li>
+              
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+            <form id="flogout" th:action="@{/logout}" method="post">
+              <a  class="book-a-table-btn scrollto" style="width:140px;font-size:12px;" onClick="document.getElementById('flogout').submit();"><b> Déconnecter</b></a>
+          </form>
+          </nav><!-- .navbar -->
+
+      </div>
+      
+
+      <div th:case="'Kindergarten Director'"> 
+            
+        <nav id="navbar" class="navbar order-last order-lg-0">
+          <ul>
+              <li><a class="nav-link scrollto active" th:href="@{/}">Accuiel</a></li>
+              <li><a class="nav-link scrollto" th:href="@{/director/profile}">Mon Profil</a></li>
+              <li><a class="nav-link scrollto" th:href="@{/director/kindergarten}">Les Jardins</a></li>
+              <li><a class="nav-link scrollto" th:href="@{/director/children}">Valider l'Enregistrement des Enfants</a></li>
+              <li class="dropdown"><a href="#"><span>Paiement</span> <i class="bi bi-chevron-down"></i></a>
+                <ul>
+                  <li><a class="nav-link scrollto" th:href="@{/director/paymentParams}">Définir les Paramètre de Paiement</a></li>
+                  <li><a class="nav-link scrollto" th:href="@{/director/payments}">Consulter les Paiements</a></li>
+                </ul>
+              </li>
+              
+
+            </ul>
+          <i class="bi bi-list mobile-nav-toggle"></i>
+          <form id="flogout" th:action="@{/logout}" method="post">
+            <a  class="book-a-table-btn scrollto" style="width:140px;font-size:12px;" onClick="document.getElementById('flogout').submit();"><b> Déconnecter</b></a>
+        </form>
+        </nav><!-- .navbar -->
+
+    </div>
+
+        <div th:case="*">   
+          <nav id="navbar" class="navbar order-last order-lg-0">
+            <ul>
+                <li><a class="nav-link scrollto active" th:href="@{/}">Accuiel</a></li>
+                <li><a class="nav-link scrollto" href="#kinder">Les JArdins</a></li>
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+          </nav><!-- .navbar -->
+        </div>
+
+
+      </th:block>
+    </div>
+  </header><!-- End Header -->

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Children</span> Managment</h2>
+                  <h6 class="animate__animated animate__fadeInDown" style="color:white;"><span style="color:orange;">Parent:</span> [[${parent.nom}]]  [[${{parent.prenom}}]]</h6>
+                  <form id="fenfant" th:action="@{/parent/children/save}" th:object="${enfant}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    <div class="container" style="width:1000px;">
+                            <div th:if="${enfant.id == null}">
+                                <h3 style="color:white;"><b>Ajouter un nouveau Enafnt</b></h3>
+                            </div>
+                            <div th:unless="${enfant.id == null}">
+                                <h3 style="color:white;"><b>Modifier le Profil d'un Enfant</b></h3>
+                            </div> 
+                                      
+                                <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
+                                 <div class="row">
+                                    <div class="col">
+                                              <div class="form-group">
+                                                  <label style="color:white;">Prénom</label>
+                                                  <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{prenom}" type="text" required>
+                                              </div>
+                                              <div class="form-group">
+                                                <label style="color:white;">Nom</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{nom}" type="text" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label style="color:white;">Date de Naissance</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{datenais}" type="date" required >
+                                            </div>
+                                        </div>
+                                            <div class="col">
+                                            <div class="form-group">
+                                                <label style="color:white;">Sexe</label>
+                                                <select class="form-control" th:field="*{sexe}" style="background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" type="text" required>
+                                                    <option value="Homme">Homme</option>
+                                                    <option value="Femme">Femme</option>
+                                                    </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label style="color:white;">Etat de Santé</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{etatsante}" type="text" required>
+                                            </div>
+                                          
+                                        </div>
+                                        </div>
+                                        <div class="row">
+                                        
+                                              <div>&nbsp;</div>
+                                              <div class="form-group">
+                                                <div style="text-align:center;">
+                                                    <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="document.getElementById('fenfant').submit();">Enregistrer</a>
+                                                    &nbsp;&nbsp;&nbsp;
+                                                    <a th:href="@{/parent/children}" class="btn-menu animate__animated animate__fadeInUp scrollto">Annuler</a>
+
+                                                </div>
+    
+                                              </div>
+                                            </div>
+                                          
+                                      </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+  
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+  
+    

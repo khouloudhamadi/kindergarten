@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h4 class="animate__animated animate__fadeInDown" style="color:white;">Inscrire Votre Enfant Dans Un Jardin [[${kindergarten.nom}]]  [[${{kindergarten.adresse}}]]</h4>
+                  <h6 class="animate__animated animate__fadeInDown" style="color:white;"><span style="color:orange;">Parent:</span> [[${parent.nom}]]  [[${{parent.prenom}}]]</h6>
+                  <form id="finsc" th:action="@{/parent/children/saveInsc}" th:object="${inscription}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{kgid}">
+                    <input type="hidden" th:field="*{enfid}">
+                    <div class="container" style="width:1000px;">
+                            <div th:if="${inscription.id == null}">
+                                <h4 style="color:white;"><b>Inscrire [[${enfant.nom}]] [[${enfant.prenom}]]</b></h4>
+                            </div>
+                            <div th:unless="${inscription.id == null}">
+                                <h3 style="color:white;"><b>Désinscrire [[${enfant.nom}]] [[${enfant.prenom}]]</b></h3>
+                            </div> 
+                                      
+                                <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
+                                 <div class="row">
+                                    <div class="col">
+                                              <div class="form-group">
+                                                  <label style="color:white;">Date</label>
+                                                  <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{date}" type="date" required>
+                                              </div>
+                                              <div class="form-group">
+                                                <label style="color:white;">Année Scolaire</label>
+                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{anneescol}" type="text" required >
+                                              </div>
+                                             
+                                          
+                                    </div>
+                                </div>
+                                         
+                                <div class="row">
+                                        
+                                              <div>&nbsp;</div>
+                                              <div class="form-group">
+                                                <div style="text-align:center;">
+                                                    <a href="#" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="document.getElementById('finsc').submit();">Inscrire</a>
+                                                    &nbsp;&nbsp;&nbsp;
+                                                    <a th:href="@{/parent/children}" class="btn-menu animate__animated animate__fadeInUp scrollto">Annuler</a>
+
+                                                </div>
+    
+                                              </div>
+                                </div>
+                                          
+                                      </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+  
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+  
+    

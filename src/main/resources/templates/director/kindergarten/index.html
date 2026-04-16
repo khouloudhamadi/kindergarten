@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="www.thymeleaf.org">
+  <head th:replace="/fragments/head.html :: head">
+  </head>
+  <body>
+
+    <!-- ======= Top Bar ======= -->
+    <section th:replace="/fragments/topbar.html :: topbar">
+    </section>
+  
+    <!-- ======= Header ======= -->
+    <header th:replace="/fragments/header.html :: header">
+    </header><!-- End Header -->
+  
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+      <div class="hero-container">
+        <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
+  
+          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+  
+          <div class="carousel-inner" role="listbox">
+  
+            <!-- Slide 1 -->
+            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+              <div class="carousel-container">
+                <div class="carousel-content">
+                  <div>&nbsp;</div>
+                  <div>&nbsp;</div>
+                  <h2 class="animate__animated animate__fadeInDown"><span>Gestion Des</span> Jardins d'Enfant</h2>
+                  <h6 class="animate__animated animate__fadeInDown" style="color:white;"><span style="color:orange;">Directeur du Jardin:</span> [[${directeur.nom}]]  [[${{directeur.prenom}}]]</h6>
+            <div class="container" style="width:1000px;">
+   <!--   <div class="card">
+            <div class="card-header"> -->
+                <div class="row">
+                    <div class="col">
+                        <h3 style="color:white;"><b>Les Jardins d'Enfant </b></h3>
+                    </div>
+                    <div class="col" style="text-align:right;">
+                        <a class="btn btn-success" th:href="@{/director/kindergarten/new}">Ajouter Un Jardin</a>
+                    </div>
+                </div>
+     <!--       </div>
+            <div class="card-body">
+            -->
+                <div class="row">
+                <div class="container" style="overflow:auto;max-height:400px;">
+                <table class="table table-bordered table-hover">
+                    <thead style="background-color:#E6EEF0">
+                        <tr>
+                            <th style="text-align:center;color:black;">ID</th>
+                            <th style="text-align:center;color:black;">Nom</th>
+                            <th style="text-align:center;color:black;">Adresse</th>
+                            <th style="text-align:center;color:black;">Email</th>
+                            <th style="text-align:center;color:black;">Tel</th>
+                            <th style="text-align:center;color:black;">Photos</th>
+                            <th style="text-align:center;color:black;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th:block th:each="kgwithphotos : ${listKGwithPhotos}">
+                            <tr>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                 <font color=black><b>  [[${kgwithphotos.id}]] </b> </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${kgwithphotos.nom}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${kgwithphotos.email}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${kgwithphotos.adresse}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <font color=black><b>  [[${kgwithphotos.tel}]]</b>  </font>
+                                </td>
+                                <td style=" background-color: #EEE6D7;opacity:0.6;">
+                                    <th:block th:each="photo : ${kgwithphotos.photos}">
+                                        <img width="50px" class="rounded-circle" th:src="${'data:image/' + photo.type + ';charset=utf-8;base64,' + photo.dataB64}" alt="">
+                                    </th:block>
+                                </td>
+                                <td style="text-align:center;">
+                                    <a class="btn btn-sm btn-warning" th:href="@{'/director/kindergarten/edit/' + ${kgwithphotos.id}}"><i class="bi bi-pen">Modifier</i></a>
+                                    &nbsp;
+                                    <a class="btn btn-sm btn-danger" th:href="@{'/director/kindergarten/delete/' + ${kgwithphotos.id}}"><i class="bi bi-trash"></i>Supprimer</a>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+      <!--      </div>   -->
+        </div>
+
+    </div>
+</div>
+</div>
+</section>
+</body>
+</html>
