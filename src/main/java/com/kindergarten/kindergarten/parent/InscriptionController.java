@@ -3,7 +3,12 @@ package com.kindergarten.kindergarten.parent;
 import java.security.Principal;
 import java.util.List;
 
+import com.kindergarten.kindergarten.director.Director;
+import com.kindergarten.kindergarten.director.DirectorRepo;
+import com.kindergarten.kindergarten.observer.DirectorNotifier;
+import com.kindergarten.kindergarten.observer.KinderGartenSubject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +41,17 @@ public class InscriptionController {
 
     @Autowired
     private PaymentParamsRepo paymentparamsrepo;
+
+    // Observer//
+    @Autowired
+    private KinderGartenSubject kinderGartenSubject;
+
+    @Autowired
+    private DirectorRepo directorRepo;
+
+    @Autowired
+    private JavaMailSender mailSender;
+    //--------
 
     @GetMapping("/director/children")
     public String listValidateInsc(Principal principal, Model m) {
@@ -115,6 +131,15 @@ public class InscriptionController {
                 inscription.setParent(parent);
                 inscription.setValid(false);
                 inscrepo.save(inscription);
+
+                Director director = kindergarten.getDirector();
+                if(director != null){
+                    DirectorNotifier directorNotifier = new DirectorNotifier(director, mailSender);
+                    kinderGartenSubject.addObserver(directorNotifier);
+                    kinderGartenSubject.notifyObservers(inscription);
+                    kinderGartenSubject.removeObserver(directorNotifier);
+                }
+
                 return "redirect:/";
             }
         }
