@@ -4,7 +4,6 @@ import java.security.Principal;
 import java.util.List;
 
 import com.kindergarten.kindergarten.director.Director;
-import com.kindergarten.kindergarten.director.DirectorRepo;
 import com.kindergarten.kindergarten.observer.DirectorNotifier;
 import com.kindergarten.kindergarten.observer.KinderGartenSubject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +45,7 @@ public class InscriptionController {
     @Autowired
     private KinderGartenSubject kinderGartenSubject;
 
-    @Autowired
-    private DirectorRepo directorRepo;
+
 
     @Autowired
     private JavaMailSender mailSender;
@@ -115,6 +113,7 @@ public class InscriptionController {
     @PostMapping("/parent/children/saveInsc")
     public String saveInscription(Principal principal, InscriptionUI inscriptionUI) {
         Compte currentuser = null;
+
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
@@ -122,7 +121,9 @@ public class InscriptionController {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = enfantRepo.findById(inscriptionUI.getEnfid()).get();
                 KinderGarten kindergarten = kgrepo.findById(inscriptionUI.getKgid()).get();
-                Inscription inscription = new Inscription();
+
+                // ** Inscription  avant créé manuellement **//
+            /*  Inscription inscription = new Inscription();
                 inscription.setAnneescolaire(inscriptionUI.getAnneescol());
                 inscription.setDate(inscriptionUI.getDate());
                 inscription.setClass_level(inscriptionUI.getClass_level());
@@ -131,7 +132,17 @@ public class InscriptionController {
                 inscription.setParent(parent);
                 inscription.setValid(false);
                 inscrepo.save(inscription);
-
+            */
+                // ** Inscription créé via la méthode createInscription de KinderGarten (GRASP CREATOR) **//
+                Inscription inscription = kindergarten.createInscription(
+                        enfant,
+                        parent,
+                        inscriptionUI.getAnneescol(),
+                        inscriptionUI.getClass_level(),
+                        inscriptionUI.getDate()
+                );
+                inscrepo.save(inscription);
+                // ** Notifier le Director par email (GoF OBSERVER) **//     
                 Director director = kindergarten.getDirector();
                 if(director != null){
                     DirectorNotifier directorNotifier = new DirectorNotifier(director, mailSender);
