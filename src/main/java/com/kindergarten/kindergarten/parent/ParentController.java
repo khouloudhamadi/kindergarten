@@ -22,6 +22,9 @@ import com.kindergarten.kindergarten.imgfiles.FileStorageService;
 import com.kindergarten.kindergarten.kindergarten.KGwithPhotos;
 import com.kindergarten.kindergarten.kindergarten.KinderGarten;
 import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
+import com.kindergarten.kindergarten.parent.service.BusinessException;
+import com.kindergarten.kindergarten.parent.service.OneShotPaymentProcessor;
+import com.kindergarten.kindergarten.parent.service.SelectedMonthsPaymentProcessor;
 
 @Controller
 public class ParentController {
@@ -45,6 +48,18 @@ public class ParentController {
 
     @Autowired
     private PaymentRepo paymentrepo;
+
+    @Autowired
+    private PaymentStrategyFactory paymentStrategyFactory;
+
+    @Autowired
+    private com.kindergarten.kindergarten.parent.service.PaymentService paymentService;
+
+    @Autowired
+private OneShotPaymentProcessor oneShotPaymentProcessor;
+
+@Autowired
+private SelectedMonthsPaymentProcessor selectedMonthsPaymentProcessor;
 
     @PostMapping("/parent/register")
     public String registerParent(ParentInfo pinf) {
@@ -266,6 +281,8 @@ public class ParentController {
 
     }
 
+
+    /* 
     @PostMapping("/parent/payment/pay/save")
     public String savePayment(Principal principal, PayReference payreference, Model model) {
         Compte currentuser = null;
@@ -301,4 +318,137 @@ public class ParentController {
         }
         return "/error/accessDenied";
     }
+    
+@PostMapping("/parent/payment/pay/save")
+public String savePayment(Principal principal, PayReference payreference, Model model) {
+    Compte currentuser = null;
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+    String today = formatter.format(date);
+
+    if (principal != null) {
+        String email = principal.getName();
+        currentuser = cptrepo.findById(email).get();
+
+        model.addAttribute("currentuser", currentuser);
+
+        if (currentuser.getType().equals("Parent")) {
+            Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
+            List<Payment> payments = paymentrepo.findByInscription(insc);
+
+            PaymentStrategy strategy =
+                paymentStrategyFactory.getStrategy(payreference.getPaymentStrategy());
+
+            strategy.pay(insc, payreference, payments, today);
+
+            return "redirect:/parent/payment";
+        }
+    }
+
+    return "/error/accessDenied";
+}
+
+
+
+@PostMapping("/parent/payment/pay/save")
+public String savePayment(Principal principal, PayReference payreference, Model model) {
+    Compte currentuser = null;
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+    String today = formatter.format(date);
+
+    if (principal != null) {
+        String email = principal.getName();
+        currentuser = cptrepo.findById(email).get();
+
+        model.addAttribute("currentuser", currentuser);
+        if (currentuser.getType().equals("Parent")) {
+            Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
+
+            if ("ONE_SHOT".equals(payreference.getPaymentStrategy())) {
+                paymentService.processOneShotPayment(insc, payreference, today);
+            } else {
+                paymentService.processSelectedMonthsPayment(insc, payreference, today);
+            }
+
+            return "redirect:/parent/payment";
+        }
+    }
+
+    return "/error/accessDenied";
+}
+    
+
+@PostMapping("/parent/payment/pay/save")
+public String savePayment(Principal principal, PayReference payreference, Model model) {
+    Compte currentuser = null;
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+    String today = formatter.format(date);
+
+    if (principal != null) {
+        String email = principal.getName();
+        currentuser = cptrepo.findById(email).get();
+
+        model.addAttribute("currentuser", currentuser);
+        if (currentuser.getType().equals("Parent")) {
+            Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
+
+            if ("ONE_SHOT".equals(payreference.getPaymentStrategy())) {
+                oneShotPaymentProcessor.processOneShotPayment(insc, payreference, today);
+            } else {
+                selectedMonthsPaymentProcessor.processSelectedMonthsPayment(insc, payreference, today);
+            }
+
+            return "redirect:/parent/payment";
+        }
+    }
+
+    return "/error/accessDenied";
+}
+    */
+
+@PostMapping("/parent/payment/pay/save")
+public String savePayment(Principal principal, PayReference payreference, Model model) {
+    Compte currentuser = null;
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+    String today = formatter.format(date);
+
+    try {
+        if (principal != null) {
+            String email = principal.getName();
+            currentuser = cptrepo.findById(email).get();
+
+            model.addAttribute("currentuser", currentuser);
+
+            if (currentuser.getType().equals("Parent")) {
+                Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
+
+                if ("ONE_SHOT".equals(payreference.getPaymentStrategy())) {
+                    oneShotPaymentProcessor.processOneShotPayment(insc, payreference, today);
+                } else {
+                    selectedMonthsPaymentProcessor.processSelectedMonthsPayment(insc, payreference, today);
+                }
+
+                return "redirect:/parent/payment";
+            }
+        }
+
+        return "/error/accessDenied";
+    } catch (BusinessException e) {
+        model.addAttribute("errorMessage", e.getMessage());
+
+        Parent parent = repo.findById(principal.getName()).get();
+        Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
+        List<Payment> payments = paymentrepo.findByInscriptionOrderById(insc);
+
+        model.addAttribute("parent", parent);
+        model.addAttribute("inscription", insc);
+        model.addAttribute("payments", payments);
+        model.addAttribute("payreference", payreference);
+
+        return "/parent/payment/payForm";
+    }
+}
 }
