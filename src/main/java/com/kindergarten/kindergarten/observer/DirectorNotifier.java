@@ -30,17 +30,13 @@ public class DirectorNotifier implements InscriptionObserver{
         String directorName = (director!=null)
                 ? director.getPrenom()+" "+director.getNom()
                 : "Director";
-
         String directorEmail = (director != null)? director.getEmail() : null;
-
         String enfantName = inscription.getEnfant() !=null
                 ? inscription.getEnfant().getPrenom()+" "+ inscription.getEnfant().getNom()
                 : "Enfant inconnu";
-
         String kgName = inscription.getKindergarten()!= null
                 ? inscription.getKindergarten().getNom()
                 : "KinderGarten inconnu";
-
         if(directorEmail != null && mailSender != null){
             try {
                 SimpleMailMessage message = new SimpleMailMessage();

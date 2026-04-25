@@ -45,8 +45,6 @@ public class InscriptionController {
     @Autowired
     private KinderGartenSubject kinderGartenSubject;
 
-
-
     @Autowired
     private JavaMailSender mailSender;
     //--------
