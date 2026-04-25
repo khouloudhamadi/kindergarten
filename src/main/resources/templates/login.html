@@ -1,115 +1,76 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="www.thymeleaf.org">
-  <head th:replace="/fragments/head.html :: head">
-  </head>
-  <body>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/fragments/head.html :: head}">
+</head>
+<body>
 
-    <!-- ======= Top Bar ======= -->
-    <section th:replace="/fragments/topbar.html :: topbar">
-    </section>
-  
-    <!-- ======= Header ======= -->
-    <header th:replace="/fragments/header.html :: header">
-    </header><!-- End Header -->
-  
-    <!-- ======= Hero Section ======= -->
-    <section id="hero">
-      <div class="hero-container">
+<!-- ======= Top Bar ======= -->
+<section th:replace="~{/fragments/topbar.html :: topbar}">
+</section>
+
+<!-- ======= Header ======= -->
+<header th:replace="~{/fragments/header.html :: header}">
+</header><!-- End Header -->
+
+<!-- ======= Hero Section ======= -->
+<section id="hero">
+    <div class="hero-container">
         <div id="heroCarousel" data-bs-interval="5000" class="carousel slide carousel-fade" data-bs-ride="carousel">
-  
-          <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
-  
-          <div class="carousel-inner" role="listbox">
-  
-            <!-- Slide 1 -->
-            <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
-              <div class="carousel-container">
-                <div class="carousel-content">
-                  <div>&nbsp;</div>
-                  <div>&nbsp;</div>
-                  <h2 class="animate__animated animate__fadeInDown"><span>SE CONNECTER</h2>
-                    <form id="flogin" th:action="@{/login}" class="form-horizontal" method="post">
-                    <div class="container" style="width:500px;">
-                        <div class="row">
-                            <div class="col">
-                                    
-                                    <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
-                               
-                                            <div class="form-group">
-                                                <label style="color:white;">Email</label>
-                                                <input style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="email" name="username" id="username" placeholder="email or username" >
+
+            <ol class="carousel-indicators" id="hero-carousel-indicators"></ol>
+
+            <div class="carousel-inner" role="listbox">
+
+                <!-- Slide 1 -->
+                <div class="carousel-item active" style="background-image: url(/assets/img/bg_1.jpg);">
+                    <div class="carousel-container">
+                        <div class="carousel-content">
+                            <div>&nbsp;</div>
+                            <div>&nbsp;</div>
+                            <h2 class="animate__animated animate__fadeInDown"><span>SE CONNECTER</span></h2>
+                            <form id="flogin" th:action="@{/login}" class="form-horizontal" method="post">
+                                <div class="container" style="width:500px;">
+                                    <div class="row">
+                                        <div class="col">
+
+                                            <div class="container" style="border: 3px solid white;padding:50px;text-align:left;" >
+
+                                                <div class="form-group">
+                                                    <label style="color:white;">Email</label>
+                                                    <input style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;"class="form-control form-rounded"  type="email" name="username" id="username" placeholder="email or username" >
+                                                </div>
+                                                <div>&nbsp;</div>
+                                                <div class="form-group">
+                                                    <label style="color:white;">Mot de Passe</label>
+                                                    <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" name="password" id="password" type="password" placeholder="password" >
+                                                </div>
+                                                <div>&nbsp;</div>
+                                                <div style="text-align:center;">
+                                                    <a href="#" style="text-align:center;" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="document.getElementById('flogin').submit();">Se Connecter</a>
+                                                    &nbsp;
+                                                    <br>
+                                                    <a th:href="@{/register}" class="btn-book animate__animated animate__fadeInUp scrollto">S'inscrire</a>
+
+                                                </div>
                                             </div>
-                                            <div>&nbsp;</div>
-                                            <div class="form-group">
-                                                <label style="color:white;">Mot de Passe</label>
-                                                <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" name="password" id="password" type="password" placeholder="password" >
-                                            </div>
-                                            <div>&nbsp;</div>
-                                            <div style="text-align:center;">
-                                            <a href="#" style="text-align:center;" class="btn-menu animate__animated animate__fadeInUp scrollto" onClick="document.getElementById('flogin').submit();">Se Connecter</a>
-                                            &nbsp;
-                                            <br></br>
-                                            <a th:href="@{/register}" class="btn-book animate__animated animate__fadeInUp scrollto">S'inscrire</a>
-                          
-                                            </div>
+                                        </div>
                                     </div>
-                            </div>
-                          </div>
+                                </div>
+                            </form>
+
                         </div>
-                      </form>
-   
                     </div>
-                  </div>
                 </div>
-      
-                
-              </div>
-      
+
+
             </div>
-          </div>
-        </section><!-- End Hero -->
-        <div th:replace="/fragments/script.html :: script"></div>
-      
-      </body>
+
+        </div>
+    </div>
+</section><!-- End Hero -->
+
+<div th:replace="~{/fragments/script.html :: script}"></div>
+
+</body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    

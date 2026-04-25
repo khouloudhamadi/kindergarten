@@ -24,11 +24,17 @@ public class EnfantController {
     @Autowired
     private EnfantRepo repo;
 
+    // =====================================================
+    // PATRON GoF — FACADE : utilisation de FamilleFacade
+    // Au lieu d'injecter EnfantRepo + ParentRepo séparément,
+    // on utilise uniquement la Facade → interface unifiée.
+    // =====================================================
+    @Autowired
+    private FamilleFacade familleFacade; // ← FACADE
+
+    // Ces repos restent pour les besoins non couverts par la Facade
     @Autowired
     private CompteRepo cptrepo;
-
-    @Autowired
-    private ParentRepo parentrepo;
 
     @Autowired
     private KinderGartenRepo kgrepo;
@@ -41,7 +47,6 @@ public class EnfantController {
 
     @GetMapping("/parent/children")
     public String home(Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
@@ -59,7 +64,6 @@ public class EnfantController {
 
     @GetMapping("/parent/children/add")
     public String addEnfant(Principal principal, Model m) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
@@ -77,7 +81,6 @@ public class EnfantController {
 
     @GetMapping("/parent/children/edit/{id}")
     public String editEnfant(@PathVariable("id") Integer id, Principal principal, Model m) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
@@ -95,14 +98,13 @@ public class EnfantController {
 
     @GetMapping("/parent/children/register/{kgid}")
     public String chooseChildToRegister(@PathVariable("kgid") Integer kgid, Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 KinderGarten kindergarten = kgrepo.findById(kgid).get();
-                List<Enfant> allchildren = repo.findByParent(parent);
+
                 List<Enfant> children = new ArrayList<>();
                 for (Enfant child : allchildren) {
                     if (!inscrepo.existsByEnfantAndValid(child, true)) {
@@ -121,7 +123,6 @@ public class EnfantController {
 
     @GetMapping("/parent/children/delete/{id}")
     public String deleteEnfant(@PathVariable("id") Integer id, Principal principal) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
@@ -135,7 +136,6 @@ public class EnfantController {
 
     @PostMapping("/parent/children/save")
     public String saveEnfant(Principal principal, Enfant enfant) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
