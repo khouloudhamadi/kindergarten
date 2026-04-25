@@ -3,7 +3,11 @@ package com.kindergarten.kindergarten.parent;
 import java.security.Principal;
 import java.util.List;
 
+import com.kindergarten.kindergarten.director.Director;
+import com.kindergarten.kindergarten.observer.DirectorNotifier;
+import com.kindergarten.kindergarten.observer.KinderGartenSubject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,12 +23,9 @@ import com.kindergarten.kindergarten.kindergarten.KinderGarten;
 import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
 
 /**
- * Controller refactorisé.
- *
- * GRASP - Faible couplage : le controller délègue à InscriptionService.
- * Il ne construit plus Inscription directement (responsabilité du Builder).
- * La gestion OCL est transparente (exception capturée et affichée à
- * l'utilisateur).
+ * GRASP - Faible couplage : le controller délègue la logique métier.
+ * GoF - Observer : notifie le Director par email après inscription.
+ * OCL - Contraintes vérifiées via InscriptionValidator.
  */
 @Controller
 public class InscriptionController {
@@ -44,16 +45,20 @@ public class InscriptionController {
     @Autowired
     private PaymentParamsRepo paymentparamsrepo;
 
-    // NOUVEAU : service qui encapsule Builder + OCL + faible couplage
+    // GoF Observer
     @Autowired
-    private InscriptionService inscriptionService;
+    private KinderGartenSubject kinderGartenSubject;
+    @Autowired
+    private JavaMailSender mailSender;
 
+    // -------------------------------------------------------
+    // DIRECTOR : liste des inscriptions à valider
+    // -------------------------------------------------------
     @GetMapping("/director/children")
     public String listValidateInsc(Principal principal, Model m) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (currentuser.getType().equals("Kindergarten Director")) {
                 List<Inscription> listinscription = (List<Inscription>) inscrepo.findAll();
                 m.addAttribute("currentuser", currentuser);
@@ -64,12 +69,14 @@ public class InscriptionController {
         return "/error/accessDenied";
     }
 
+    // -------------------------------------------------------
+    // PARENT : liste des inscriptions (pour désinscrire)
+    // -------------------------------------------------------
     @GetMapping("/parent/children/unenroll")
     public String showlist(Principal principal, Model m) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (currentuser.getType().equals("Parent")) {
                 Parent parent = parentrepo.findById(email).get();
                 List<Inscription> listinscription = (List<Inscription>) inscrepo.findByParent(parent);
@@ -81,22 +88,26 @@ public class InscriptionController {
         return "/error/accessDenied";
     }
 
+    // -------------------------------------------------------
+    // PARENT : afficher le formulaire d'inscription
+    // -------------------------------------------------------
     @GetMapping("/parent/children/registerChild/{kgid}/{childid}")
     public String showInscForm(@PathVariable("kgid") Integer kgid,
             @PathVariable("childid") Integer childid,
             Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (currentuser.getType().equals("Parent")) {
                 Parent parent = parentrepo.findById(email).get();
                 KinderGarten kindergarten = kgrepo.findById(kgid).get();
                 Enfant enfant = enfantRepo.findById(childid).get();
+
                 InscriptionUI inscription = new InscriptionUI();
                 inscription.setEnfid(enfant.getId());
                 inscription.setKgid(kindergarten.getId());
                 inscription.setId(0);
+
                 model.addAttribute("parent", parent);
                 model.addAttribute("enfant", enfant);
                 model.addAttribute("currentuser", currentuser);
@@ -108,36 +119,50 @@ public class InscriptionController {
         return "/error/accessDenied";
     }
 
-    /**
-     * REFACTORISÉ avec Builder + OCL.
-     * Si la contrainte OCL est violée, l'erreur est affichée dans le formulaire.
-     */
+    // -------------------------------------------------------
+    // PARENT : sauvegarder l'inscription
+    // GRASP Creator → kindergarten.createInscription()
+    // GoF Observer → notifier le Director par email
+    // OCL → InscriptionValidator via exception
+    // -------------------------------------------------------
     @PostMapping("/parent/children/saveInsc")
     public String saveInscription(Principal principal,
             InscriptionUI inscriptionUI,
             RedirectAttributes redirectAttributes) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
+
             if (currentuser.getType().equals("Parent")) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = enfantRepo.findById(inscriptionUI.getEnfid()).get();
                 KinderGarten kindergarten = kgrepo.findById(inscriptionUI.getKgid()).get();
 
                 try {
-                    // Builder + OCL via InscriptionService (faible couplage)
-                    inscriptionService.creerInscription(
+                    // GRASP CREATOR : KinderGarten crée l'Inscription
+                    // + validation OCL lancée en interne
+                    Inscription inscription = kindergarten.createInscription(
                             enfant,
-                            kindergarten,
                             parent,
                             inscriptionUI.getAnneescol(),
                             inscriptionUI.getClass_level(),
                             inscriptionUI.getDate());
+
+                    inscrepo.save(inscription);
+
+                    // GoF OBSERVER : notifier le Director par email
+                    Director director = kindergarten.getDirector();
+                    if (director != null) {
+                        DirectorNotifier directorNotifier = new DirectorNotifier(director, mailSender);
+                        kinderGartenSubject.addObserver(directorNotifier);
+                        kinderGartenSubject.notifyObservers(inscription);
+                        kinderGartenSubject.removeObserver(directorNotifier);
+                    }
+
                     return "redirect:/";
 
                 } catch (InscriptionValidator.InscriptionViolationException ex) {
-                    // OCL : contrainte violée — message affiché à l'utilisateur
+                    // OCL : contrainte violée → message affiché dans le formulaire
                     redirectAttributes.addFlashAttribute("erreurOCL", ex.getMessage());
                     return "redirect:/parent/children/registerChild/"
                             + inscriptionUI.getKgid()
@@ -148,12 +173,19 @@ public class InscriptionController {
         return "/error/accessDenied";
     }
 
+    // -------------------------------------------------------
+    // PARENT : supprimer une inscription
+    // -------------------------------------------------------
     @GetMapping("/parent/children/unenroll/delete/{id}")
     public String deleteInscription(@PathVariable("id") String id) {
         inscrepo.deleteById(Integer.parseInt(id));
         return "redirect:/parent/children/unenroll";
     }
 
+    // -------------------------------------------------------
+    // DIRECTOR : valider ou invalider une inscription
+    // + génération automatique des paiements mensuels
+    // -------------------------------------------------------
     @GetMapping("/director/children/validateinsc/{id}/{op}")
     public String validUnvalidInscription(@PathVariable("id") Integer id,
             @PathVariable("op") Integer op) {
@@ -184,6 +216,7 @@ public class InscriptionController {
         } else {
             inscription.setValid(false);
         }
+
         inscrepo.save(inscription);
         return "redirect:/director/children";
     }
