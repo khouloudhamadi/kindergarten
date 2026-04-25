@@ -173,6 +173,15 @@ public class Parent {
         this.enfants = enfants;
     }
 
+    public void addEnfant(Enfant enfant) {
+    enfant.setParent(this);
+    this.enfants.add(enfant);
+}
+
+    public void removeEnfant(Enfant enfant) {
+        this.enfants.remove(enfant);
+    }
+
     @Override
     public String toString() {
         return this.nom + " " + this.prenom;
