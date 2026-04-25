@@ -52,6 +52,19 @@
                                                 <label style="color:white;">Année Scolaire</label>
                                                 <input class="form-control" style=" background-color: #EEE6D7; border: 1px solid black;opacity: 0.6;border-radius: 2rem;" th:field="*{anneescol}" type="text" required >
                                               </div>
+                                              <div class="form-group">
+                                                <label style="color:white;">Niveau de classe</label>
+                                                <select class="form-control"
+                                                  style="background-color: #EEE6D7; border: 1px solid black; opacity: 0.6; border-radius: 2rem;"
+                                                  th:field="*{class_level}" required>
+                                              
+                                                  <option value="">-- Choisir --</option>
+                                                  <option value="PS">Petite Section (PS)</option>
+                                                  <option value="MS">Moyenne Section (MS)</option>
+                                                  <option value="GS">Grande Section (GS)</option>
+                                              
+                                                </select>
+                                              </div>
                                              
                                           
                                     </div>

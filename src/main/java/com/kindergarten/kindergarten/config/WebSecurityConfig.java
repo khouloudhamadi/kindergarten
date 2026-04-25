@@ -2,7 +2,6 @@ package com.kindergarten.kindergarten.config;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
@@ -36,16 +36,6 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    DataSource getDS() {
-        DataSourceBuilder dsb = DataSourceBuilder.create();
-        dsb.driverClassName("org.postgresql.Driver");
-        dsb.url("jdbc:postgresql://localhost/dbminikindergarten");
-        dsb.username("postgres");
-        dsb.password("postgres");
-        return dsb.build();
-    }
-
-    @Bean
     JdbcUserDetailsManager getUserDM(DataSource ds) {
         return new JdbcUserDetailsManager(ds);
     }
@@ -54,5 +44,4 @@ public class WebSecurityConfig {
     BCryptPasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
