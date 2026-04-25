@@ -24,17 +24,14 @@ public class EnfantController {
     @Autowired
     private EnfantRepo repo;
 
-    // =====================================================
-    // PATRON GoF — FACADE : utilisation de FamilleFacade
-    // Au lieu d'injecter EnfantRepo + ParentRepo séparément,
-    // on utilise uniquement la Facade → interface unifiée.
-    // =====================================================
     @Autowired
-    private FamilleFacade familleFacade; // ← FACADE
+    private FamilleFacade familleFacade;
 
-    // Ces repos restent pour les besoins non couverts par la Facade
     @Autowired
     private CompteRepo cptrepo;
+
+    @Autowired
+    private ParentRepo parentrepo;  // ✅ AJOUTÉ
 
     @Autowired
     private KinderGartenRepo kgrepo;
@@ -49,7 +46,7 @@ public class EnfantController {
     public String home(Principal principal, Model model) {
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get(); // ✅ déclaré localement
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 List<Enfant> children = repo.findByParent(parent);
@@ -66,7 +63,7 @@ public class EnfantController {
     public String addEnfant(Principal principal, Model m) {
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = new Enfant();
@@ -83,7 +80,7 @@ public class EnfantController {
     public String editEnfant(@PathVariable("id") Integer id, Principal principal, Model m) {
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = repo.findById(id).get();
@@ -97,14 +94,17 @@ public class EnfantController {
     }
 
     @GetMapping("/parent/children/register/{kgid}")
-    public String chooseChildToRegister(@PathVariable("kgid") Integer kgid, Principal principal, Model model) {
+    public String chooseChildToRegister(@PathVariable("kgid") Integer kgid,
+            Principal principal, Model model) {
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 KinderGarten kindergarten = kgrepo.findById(kgid).get();
 
+                // ✅ allchildren remplacé par repo.findByParent(parent)
+                List<Enfant> allchildren = repo.findByParent(parent);
                 List<Enfant> children = new ArrayList<>();
                 for (Enfant child : allchildren) {
                     if (!inscrepo.existsByEnfantAndValid(child, true)) {
@@ -125,7 +125,7 @@ public class EnfantController {
     public String deleteEnfant(@PathVariable("id") Integer id, Principal principal) {
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 repo.deleteById(id);
                 return "redirect:/parent/children";
@@ -138,7 +138,7 @@ public class EnfantController {
     public String saveEnfant(Principal principal, Enfant enfant) {
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 enfant.setParent(parent);
