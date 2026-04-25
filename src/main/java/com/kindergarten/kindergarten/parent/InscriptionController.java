@@ -3,7 +3,11 @@ package com.kindergarten.kindergarten.parent;
 import java.security.Principal;
 import java.util.List;
 
+import com.kindergarten.kindergarten.director.Director;
+import com.kindergarten.kindergarten.observer.DirectorNotifier;
+import com.kindergarten.kindergarten.observer.KinderGartenSubject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +40,16 @@ public class InscriptionController {
 
     @Autowired
     private PaymentParamsRepo paymentparamsrepo;
+
+    // Observer//
+    @Autowired
+    private KinderGartenSubject kinderGartenSubject;
+
+
+
+    @Autowired
+    private JavaMailSender mailSender;
+    //--------
 
     @GetMapping("/director/children")
     public String listValidateInsc(Principal principal, Model m) {
@@ -99,6 +113,7 @@ public class InscriptionController {
     @PostMapping("/parent/children/saveInsc")
     public String saveInscription(Principal principal, InscriptionUI inscriptionUI) {
         Compte currentuser = null;
+
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
@@ -106,7 +121,9 @@ public class InscriptionController {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = enfantRepo.findById(inscriptionUI.getEnfid()).get();
                 KinderGarten kindergarten = kgrepo.findById(inscriptionUI.getKgid()).get();
-                Inscription inscription = new Inscription();
+
+                // ** Inscription  avant créé manuellement **//
+            /*  Inscription inscription = new Inscription();
                 inscription.setAnneescolaire(inscriptionUI.getAnneescol());
                 inscription.setDate(inscriptionUI.getDate());
                 inscription.setClass_level(inscriptionUI.getClass_level());
@@ -115,6 +132,25 @@ public class InscriptionController {
                 inscription.setParent(parent);
                 inscription.setValid(false);
                 inscrepo.save(inscription);
+            */
+                // ** Inscription créé via la méthode createInscription de KinderGarten (GRASP CREATOR) **//
+                Inscription inscription = kindergarten.createInscription(
+                        enfant,
+                        parent,
+                        inscriptionUI.getAnneescol(),
+                        inscriptionUI.getClass_level(),
+                        inscriptionUI.getDate()
+                );
+                inscrepo.save(inscription);
+                // ** Notifier le Director par email (GoF OBSERVER) **//     
+                Director director = kindergarten.getDirector();
+                if(director != null){
+                    DirectorNotifier directorNotifier = new DirectorNotifier(director, mailSender);
+                    kinderGartenSubject.addObserver(directorNotifier);
+                    kinderGartenSubject.notifyObservers(inscription);
+                    kinderGartenSubject.removeObserver(directorNotifier);
+                }
+
                 return "redirect:/";
             }
         }
