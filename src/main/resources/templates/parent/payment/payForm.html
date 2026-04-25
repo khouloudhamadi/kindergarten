@@ -5,10 +5,12 @@
   <body>
     <script>
       var payClicked = false;
+      /*
       function payInscription() {
         montant=0.0;
         idMonths = "";
         tb=document.getElementById("tb");
+        document.getElementById("paymentStrategy").value = "SELECTED_MONTHS";
         rows = tb.rows;
         ok=true;
         for(i=0;i<rows.length;i++) {
@@ -100,6 +102,150 @@
           return false;
         }
       }
+        */ 
+
+
+function payInscription() {
+  let montant = 0.0;
+  let idMonths = "";
+  let tb = document.getElementById("tb");
+  let rows = tb.rows;
+  let ok = true;
+
+  for (let i = 0; i < rows.length; i++) {
+    let checkbox = rows[i].querySelector("td:nth-child(6) input[type='checkbox']");
+
+    if (!checkbox) {
+      continue;
+    }
+
+    if (checkbox.checked) {
+      if (ok) {
+        let montantDuText = rows[i].cells[1].innerText.trim();
+        let montantDu = parseFloat(montantDuText) || 0;
+        montant += montantDu;
+
+        if (idMonths.length === 0) {
+          idMonths = checkbox.id;
+        } else {
+          idMonths += "@" + checkbox.id;
+        }
+      } else {
+        alert("Vous devez d'abord payer les mois précédents");
+        return false;
+      }
+    } else {
+      ok = false;
+    }
+  }
+
+  if (montant > 0) {
+    document.getElementById("amount").value = montant;
+    document.getElementById("months").value = idMonths;
+
+    const arr_months = idMonths.split("@");
+    document.getElementById("amountpermonth").value = montant / arr_months.length;
+
+    let smonths = "";
+    for (let i = 0; i < arr_months.length; i++) {
+      let mth = parseInt(arr_months[i].substring(2), 10);
+
+      switch (mth) {
+        case 1: smonths += " Janvier"; break;
+        case 2: smonths += " Février"; break;
+        case 3: smonths += " Mars"; break;
+        case 4: smonths += " Avril"; break;
+        case 5: smonths += " Mai"; break;
+        case 6: smonths += " Juin"; break;
+        case 7: smonths += " Juillet"; break;
+        case 8: smonths += " Août"; break;
+        case 9: smonths += " Septembre"; break;
+        case 10: smonths += " Octobre"; break;
+        case 11: smonths += " Novembre"; break;
+        case 12: smonths += " Décembre"; break;
+      }
+    }
+
+    document.getElementById("monthNames").value = smonths.trim();
+
+    // strategy pattern
+    const strategyField = document.getElementById("paymentStrategy");
+    if (strategyField) {
+      strategyField.value = "SELECTED_MONTHS";
+    }
+
+    payClicked = true;
+    return true;
+  } else {
+    alert("Vous n'avez pas choisi les tranches à payer");
+    return false;
+  }
+}
+
+function payOneShot() {
+  let montant = 0.0;
+  let idMonths = "";
+  let tb = document.getElementById("tb");
+  let rows = tb.rows;
+  let smonths = "";
+
+  for (let i = 0; i < rows.length; i++) {
+    let checkbox = rows[i].querySelector("td:nth-child(6) input[type='checkbox']");
+
+    if (!checkbox) {
+      continue;
+    }
+
+    let montantDuText = rows[i].cells[1].innerText.trim();
+    let montantDu = parseFloat(montantDuText) || 0;
+    montant += montantDu;
+
+    if (idMonths.length === 0) {
+      idMonths = checkbox.id;
+    } else {
+      idMonths += "@" + checkbox.id;
+    }
+
+    let mth = parseInt(checkbox.id.substring(2), 10);
+
+    switch (mth) {
+      case 1: smonths += " Janvier"; break;
+      case 2: smonths += " Février"; break;
+      case 3: smonths += " Mars"; break;
+      case 4: smonths += " Avril"; break;
+      case 5: smonths += " Mai"; break;
+      case 6: smonths += " Juin"; break;
+      case 7: smonths += " Juillet"; break;
+      case 8: smonths += " Août"; break;
+      case 9: smonths += " Septembre"; break;
+      case 10: smonths += " Octobre"; break;
+      case 11: smonths += " Novembre"; break;
+      case 12: smonths += " Décembre"; break;
+    }
+  }
+
+  if (montant > 0) {
+    document.getElementById("amount").value = montant;
+    document.getElementById("months").value = idMonths;
+    document.getElementById("amountpermonth").value = 0;
+    document.getElementById("monthNames").value = smonths.trim();
+
+    // strategy pattern
+    const strategyField = document.getElementById("paymentStrategy");
+    if (strategyField) {
+      strategyField.value = "ONE_SHOT";
+    }
+
+    payClicked = true;
+    return true;
+  } else {
+    alert("Aucun mois impayé à régler");
+    return false;
+  }
+}
+
+
+
 
       function makeid(length) {
         let result = '';
@@ -186,8 +332,18 @@
                   <div class="col">
                     <h5 style="color:white;"> <b> <span style="color:orange;">Jardin: </span> [[${inscription.kindergarten}]] </b></h5>
                   </div>
+
+
+
+                 
+                
+
+
+
+
                   <div class="col" style="text-align:right">
-                    <a href="#menu" class="btn btn-success" onClick="payInscription();return true;">Paiement</a>
+                    <a href="#menu" class="btn btn-warning" onclick="payOneShot(); return true;">Paiement One Shot</a>&nbsp;&nbsp;&nbsp;
+                    <a href="#menu" class="btn btn-success" onClick="payInscription();return true;">Paiement par sélection</a>
                   </div>
                 </div>
                 <div>&nbsp;</div>
@@ -294,11 +450,13 @@
       <div class="section-title">
         <h2>Payer l'Inscription <span>De Votre Enfant</span></h2>
       </div>
+      <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
       <FORM id="fpayreference" th:action="@{/parent/payment/pay/save}" th:object="${payreference}" method="POST">
         <input type="hidden" id = "amountpermonth" th:field="*{amountpermonth}">
         <input type="hidden" id = "months" th:field="*{months}">
         <input type="hidden" id = "reference" th:field="*{reference}">
         <input type="hidden" id = "idinsc" th:field="*{idinsc}">
+        <input type="hidden" id="paymentStrategy" th:field="*{paymentStrategy}">
       </FORM>
 
       <div class="row menu-container">
