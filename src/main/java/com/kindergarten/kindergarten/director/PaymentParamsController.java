@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.kindergarten.kindergarten.compte.Compte;
 import com.kindergarten.kindergarten.compte.CompteRepo;
+import com.kindergarten.kindergarten.compte.RoleService;
+import com.kindergarten.kindergarten.compte.RoleType;
 import com.kindergarten.kindergarten.kindergarten.KinderGarten;
 import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
 
 @Controller
 public class PaymentParamsController {
+
     @Autowired
     private CompteRepo cptrepo;
 
@@ -29,13 +32,16 @@ public class PaymentParamsController {
     @Autowired
     private PaymentParamsRepo repo;
 
+    @Autowired
+    private RoleService roleService;
+
     @GetMapping("/director/paymentParams")
     public String listPaymentParams(Principal principal, Model model) {
         Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Kindergarten Director")) {
+            if (roleService.aLe(email, RoleType.ROLE_DIRECTOR)) {
                 Director directeur = drepo.findById(email).get();
                 List<PaymentParams> listpaymentparams = repo.findByDirectorOrderByKindergarten(directeur);
                 model.addAttribute("listpaymentparams", listpaymentparams);
@@ -54,7 +60,7 @@ public class PaymentParamsController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Kindergarten Director")) {
+            if (roleService.aLe(email, RoleType.ROLE_DIRECTOR)) {
                 Director directeur = drepo.findById(email).get();
                 PaymentParams pp = new PaymentParams();
                 List<KinderGarten> listkindergarten = kgrepo.findByDirector(directeur);
@@ -76,7 +82,7 @@ public class PaymentParamsController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Kindergarten Director")) {
+            if (roleService.aLe(email, RoleType.ROLE_DIRECTOR)) {
                 Director directeur = drepo.findById(email).get();
                 paymentparams.setDirector(directeur);
                 repo.save(paymentparams);
@@ -93,7 +99,7 @@ public class PaymentParamsController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Kindergarten Director")) {
+            if (roleService.aLe(email, RoleType.ROLE_DIRECTOR)) {
                 Director directeur = drepo.findById(email).get();
                 PaymentParams paymentparams = repo.findById(id).get();
                 List<KinderGarten> listkindergarten = kgrepo.findByDirector(directeur);
