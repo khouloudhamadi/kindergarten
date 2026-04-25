@@ -1,18 +1,21 @@
 package com.kindergarten.kindergarten.compte;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 
+/**
+ * Compte Entity - SOLID SRP
+ *
+ * Responsabilité unique : gérer l'identité et l'état d'activation d'un
+ * utilisateur
+ *
+ * ✓ Contient : email, password, enabled ✗ Ne contient PAS : type (géré par
+ * Authorities), confirm_password (géré par DTO)
+ *
+ * Une seule raison de changer : si la logique d'identité évolue
+ */
 @Entity
 @Table(name = "users")
 public class Compte {
@@ -21,13 +24,8 @@ public class Compte {
     @Column(name = "username", nullable = false, unique = true)
     private String email;
 
-    private String type;
-
     @Column(nullable = false)
     private String password;
-
-    @Transient
-    private String confirm_password;
 
     private boolean enabled = false;
 
@@ -49,20 +47,6 @@ public class Compte {
     }
 
     /**
-     * @return String return the type
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * @param type the type to set
-     */
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    /**
      * @return String return the password
      */
     public String getPassword() {
@@ -74,20 +58,6 @@ public class Compte {
      */
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    /**
-     * @return String return the confirm_password
-     */
-    public String getConfirm_password() {
-        return confirm_password;
-    }
-
-    /**
-     * @param confirm_password the confirm_password to set
-     */
-    public void setConfirm_password(String confirm_password) {
-        this.confirm_password = confirm_password;
     }
 
     /**
