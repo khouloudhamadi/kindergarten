@@ -80,12 +80,7 @@ public class DirectorNotifier implements InscriptionObserver{
                 logger.error("  - Check 'from' address in code");
                 logger.error("  - Exception: {}", e.getMessage(), e);
 
-            } catch (Exception e) {
-                logger.error("✗ [UNEXPECTED ERROR] Unexpected exception sending email");
-                logger.error("  - Exception type: {}", e.getClass().getName());
-                logger.error("  - Message: {}", e.getMessage());
-                logger.error("  - Full stacktrace: ", e);
-            }
+            } 
         }
     }
     public Director getDirector() {
