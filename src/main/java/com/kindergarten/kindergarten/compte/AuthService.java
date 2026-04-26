@@ -4,15 +4,14 @@ import java.security.Principal;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * Service d'authentification - Pattern GRASP Controller
+ * Service d'authentification - Pattern GRASP Controller (Façade)
  *
- * Centralise TOUTE la logique métier d'authentification : - Création de compte
- * - Activation / Désactivation - Changement de mot de passe - Récupération
- * utilisateur courant
+ * Centralise TOUTE la logique métier d'authentification en déléguant à : -
+ * AccountService : gestion des comptes (création, activation, mot de passe) -
+ * RoleService : gestion des rôles
  *
  * Les contrôleurs appelleront UNIQUEMENT les méthodes de ce service et ne
  * feront aucune logique métier eux-mêmes.
@@ -21,13 +20,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     @Autowired
-    private CompteRepo compteRepo;
-
-    @Autowired
-    private AuthoritiesRepo authoritiesRepo;
-
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private AccountService accountService;
 
     @Autowired
     private RoleService roleService;
@@ -43,18 +36,7 @@ public class AuthService {
      * @return Le compte créé
      */
     public Compte creerCompte(String email, String password, String type) {
-        Compte compte = new Compte();
-        compte.setEmail(email);
-        compte.setPassword(passwordEncoder.encode(password));
-        compte.setEnabled(false);  // Désactivé par défaut
-        Compte savedCompte = compteRepo.save(compte);
-
-        // Attribuer le rôle correspondant
-        if (type != null && !type.isBlank()) {
-            roleService.attribuerRole(email, RoleType.fromLegacy(type));
-        }
-
-        return savedCompte;
+        return accountService.creerCompte(email, password, type);
     }
 
     /**
@@ -66,14 +48,7 @@ public class AuthService {
      * @throws IllegalArgumentException si le compte n'existe pas
      */
     public void activerCompte(String email) {
-        Optional<Compte> compteOpt = compteRepo.findById(email);
-        if (!compteOpt.isPresent()) {
-            throw new IllegalArgumentException("Compte introuvable : " + email);
-        }
-
-        Compte compte = compteOpt.get();
-        compte.setEnabled(true);
-        compteRepo.save(compte);
+        accountService.activerCompte(email);
     }
 
     /**
@@ -83,14 +58,7 @@ public class AuthService {
      * @throws IllegalArgumentException si le compte n'existe pas
      */
     public void desactiverCompte(String email) {
-        Optional<Compte> compteOpt = compteRepo.findById(email);
-        if (!compteOpt.isPresent()) {
-            throw new IllegalArgumentException("Compte introuvable : " + email);
-        }
-
-        Compte compte = compteOpt.get();
-        compte.setEnabled(false);
-        compteRepo.save(compte);
+        accountService.desactiverCompte(email);
     }
 
     /**
@@ -102,14 +70,7 @@ public class AuthService {
      * @throws IllegalArgumentException si le compte n'existe pas
      */
     public void changerMotDePasse(String email, String nouveauMdp) {
-        Optional<Compte> compteOpt = compteRepo.findById(email);
-        if (!compteOpt.isPresent()) {
-            throw new IllegalArgumentException("Compte introuvable : " + email);
-        }
-
-        Compte compte = compteOpt.get();
-        compte.setPassword(passwordEncoder.encode(nouveauMdp));
-        compteRepo.save(compte);
+        accountService.changerMotDePasse(email, nouveauMdp);
     }
 
     /**
@@ -120,10 +81,7 @@ public class AuthService {
      * @return Le compte correspondant, ou null si non connecté
      */
     public Compte getCurrentUser(Principal principal) {
-        if (principal == null) {
-            return null;
-        }
-        return compteRepo.findById(principal.getName()).orElse(null);
+        return accountService.getCurrentUser(principal);
     }
 
     /**
@@ -133,7 +91,7 @@ public class AuthService {
      * @return Optional contenant le compte s'il existe
      */
     public Optional<Compte> getCompteByEmail(String email) {
-        return compteRepo.findById(email);
+        return accountService.getCompteByEmail(email);
     }
 
     /**
@@ -146,11 +104,7 @@ public class AuthService {
      * @return true si l'utilisateur a le rôle, false sinon
      */
     public boolean hasRole(Compte compte, String role) {
-        if (compte == null || role == null || role.isBlank()) {
-            return false;
-        }
-        RoleType roleType = RoleType.fromLegacy(role);
-        return roleService.aLe(compte.getEmail(), roleType);
+        return accountService.hasRole(compte, role);
     }
 
     /**
@@ -160,7 +114,7 @@ public class AuthService {
      * @return true si c'est un admin, false sinon
      */
     public boolean isAdmin(Compte compte) {
-        return hasRole(compte, "Admin");
+        return accountService.isAdmin(compte);
     }
 
     /**
@@ -170,7 +124,7 @@ public class AuthService {
      * @return true si c'est un directeur, false sinon
      */
     public boolean isDirector(Compte compte) {
-        return hasRole(compte, "Kindergarten Director");
+        return accountService.isDirector(compte);
     }
 
     /**
@@ -180,6 +134,6 @@ public class AuthService {
      * @return true si c'est un parent, false sinon
      */
     public boolean isParent(Compte compte) {
-        return hasRole(compte, "Parent");
+        return accountService.isParent(compte);
     }
 }

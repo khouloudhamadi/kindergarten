@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
  * AccountService - SOLID SRP
  *
  * Responsabilité unique : gérer le cycle de vie d'un compte (identité, mot de
- * passe, activation)
- *
- * NE gère PAS les rôles → RoleService s'en charge
+ * passe, activation) ET les rôles associés
  *
  * Une seule raison de changer : si la logique de gestion des comptes évolue
  */
@@ -24,22 +22,47 @@ public class AccountService {
     private CompteRepo compteRepo;
 
     @Autowired
+    private AuthoritiesRepo authoritiesRepo;
+
+    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleService roleService;
 
     // ========== CRÉER UN COMPTE ==========
     /**
-     * Crée un nouveau compte avec mot de passe chiffré
+     * Crée un nouveau compte avec mot de passe chiffré et rôle associé
+     *
+     * @param email l'adresse email de l'utilisateur
+     * @param password le mot de passe en clair (sera chiffré)
+     * @param type le type de compte (Admin, Director, Parent) - facultatif
+     * @return le compte créé (enabled=false par défaut)
+     */
+    public Compte creerCompte(String email, String password, String type) {
+        Compte compte = new Compte();
+        compte.setEmail(email);
+        compte.setPassword(passwordEncoder.encode(password));
+        compte.setEnabled(false);  // Attente d'activation
+        Compte savedCompte = compteRepo.save(compte);
+
+        // Attribuer le rôle correspondant si spécifié
+        if (type != null && !type.isBlank()) {
+            roleService.attribuerRole(email, RoleType.fromLegacy(type));
+        }
+
+        return savedCompte;
+    }
+
+    /**
+     * Crée un nouveau compte sans rôle (surcharge pour compatibilité)
      *
      * @param email l'adresse email de l'utilisateur
      * @param password le mot de passe en clair (sera chiffré)
      * @return le compte créé (enabled=false par défaut)
      */
     public Compte creerCompte(String email, String password) {
-        Compte compte = new Compte();
-        compte.setEmail(email);
-        compte.setPassword(passwordEncoder.encode(password));
-        compte.setEnabled(false);  // Attente d'activation
-        return compteRepo.save(compte);
+        return creerCompte(email, password, null);
     }
 
     // ========== ACTIVER / DÉSACTIVER ==========
@@ -49,7 +72,7 @@ public class AccountService {
      * @param email l'adresse email du compte
      * @throws IllegalArgumentException si le compte n'existe pas
      */
-    public void activer(String email) {
+    public void activerCompte(String email) {
         Compte compte = compteRepo.findById(email)
                 .orElseThrow(() -> new IllegalArgumentException("Compte introuvable : " + email));
         compte.setEnabled(true);
@@ -62,11 +85,20 @@ public class AccountService {
      * @param email l'adresse email du compte
      * @throws IllegalArgumentException si le compte n'existe pas
      */
-    public void desactiver(String email) {
+    public void desactiverCompte(String email) {
         Compte compte = compteRepo.findById(email)
                 .orElseThrow(() -> new IllegalArgumentException("Compte introuvable : " + email));
         compte.setEnabled(false);
         compteRepo.save(compte);
+    }
+
+    // Alias pour compatibilité rétroactive
+    public void activer(String email) {
+        activerCompte(email);
+    }
+
+    public void desactiver(String email) {
+        desactiverCompte(email);
     }
 
     // ========== CHANGER LE MOT DE PASSE ==========
@@ -124,6 +156,16 @@ public class AccountService {
     }
 
     /**
+     * Récupère un compte par email (alias pour les tests)
+     *
+     * @param email l'adresse email
+     * @return le compte, ou Optional.empty() si introuvable
+     */
+    public Optional<Compte> getCompteByEmail(String email) {
+        return obtenirCompte(email);
+    }
+
+    /**
      * Sauvegarde un compte
      *
      * @param compte le compte à sauvegarder
@@ -152,4 +194,50 @@ public class AccountService {
         compteRepo.deleteById(email);
     }
 
+    // ========== VÉRIFIER LES RÔLES ==========
+    /**
+     * Vérifie si un compte a un rôle spécifique
+     *
+     * @param compte le compte à vérifier
+     * @param role le rôle attendu (e.g., "Admin", "Kindergarten Director",
+     * "Parent")
+     * @return true si l'utilisateur a le rôle, false sinon
+     */
+    public boolean hasRole(Compte compte, String role) {
+        if (compte == null || role == null || role.isBlank()) {
+            return false;
+        }
+        RoleType roleType = RoleType.fromLegacy(role);
+        return roleService.aLe(compte.getEmail(), roleType);
+    }
+
+    /**
+     * Vérifie si un compte est un Admin
+     *
+     * @param compte le compte à vérifier
+     * @return true si c'est un admin, false sinon
+     */
+    public boolean isAdmin(Compte compte) {
+        return hasRole(compte, "Admin");
+    }
+
+    /**
+     * Vérifie si un compte est un Directeur (Kindergarten Director)
+     *
+     * @param compte le compte à vérifier
+     * @return true si c'est un directeur, false sinon
+     */
+    public boolean isDirector(Compte compte) {
+        return hasRole(compte, "Kindergarten Director");
+    }
+
+    /**
+     * Vérifie si un compte est un Parent
+     *
+     * @param compte le compte à vérifier
+     * @return true si c'est un parent, false sinon
+     */
+    public boolean isParent(Compte compte) {
+        return hasRole(compte, "Parent");
+    }
 }

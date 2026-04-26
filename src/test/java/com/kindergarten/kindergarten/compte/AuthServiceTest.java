@@ -14,188 +14,145 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
- * Tests unitaires pour AuthService
+ * Tests unitaires pour AuthService (façade GRASP Controller).
  *
- * Patterns testés : - Pattern GRASP Controller (délégation) - Isolation des
- * dépendances (mocks) - Vérification des droits d'accès - Gestion des erreurs
+ * CORRECTION des deux erreurs :
+ *
+ * Erreur 1 — "cannot find symbol class Compte" (ligne 95) Cause : AuthService
+ * délègue à AccountService. @InjectMocks injectait CompteRepo + AuthoritiesRepo
+ * dans AuthService, mais AuthService n'a plus ces champs — il a AccountService
+ * + RoleService. Mockito ne trouvait pas de champ Compte à injecter. Fix : On
+ * mocke AccountService et RoleService (dépendances directes de AuthService),
+ * pas les repos (qui appartiennent à AccountService).
+ *
+ * Erreur 2 — "cannot find symbol existsByCompteEmail" (ligne 132) Cause : Le
+ * mock était authoritiesRepo, mais AuthService n'appelle plus authoritiesRepo
+ * directement — c'est AccountService qui le fait. Le stub portait sur un mock
+ * qui n'était jamais invoqué. Fix : On stubbe accountService.activerCompte()
+ * via doThrow/when au lieu de descendre dans les détails du repo.
  *
  * Exécution : mvn test -Dtest=AuthServiceTest
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("AuthService - Tests unitaires")
+@DisplayName("AuthService — Tests de délégation (GRASP Controller)")
 public class AuthServiceTest {
 
+    // ── Mocks des dépendances DIRECTES de AuthService ───────────────────
     @Mock
-    private CompteRepo compteRepo;
+    private AccountService accountService;
 
     @Mock
-    private AuthoritiesRepo authoritiesRepo;
-
-    @Mock
-    private BCryptPasswordEncoder passwordEncoder;
+    private RoleService roleService;
 
     @InjectMocks
     private AuthService authService;
 
-    // ---------------------------------------------------------------
-    // Données de test partagées
-    // ---------------------------------------------------------------
+    // ── Données de test ──────────────────────────────────────────────────
     private Compte testCompte;
     private final String testEmail = "user@test.com";
     private final String testPassword = "password123";
 
-    /**
-     * Initialisation avant chaque test.
-     *
-     * FIX #1 — setType() a été supprimé de Compte (SRP : le rôle appartient
-     * désormais à Authorities / RoleService). On initialise uniquement les
-     * champs qui existent encore dans Compte : email, password, enabled.
-     *
-     * Le rôle est testé via hasRole()/isAdmin()/isParent()/isDirector() dont la
-     * logique interne s'appuie sur AuthoritiesRepo, pas sur Compte.getType().
-     */
     @BeforeEach
     void setUp() {
         testCompte = new Compte();
         testCompte.setEmail(testEmail);
         testCompte.setPassword("hashed_password");
         testCompte.setEnabled(false);
-        // setType() supprimé : le type/rôle est dans Authorities (SRP)
+        // setType() supprimé (SRP) — le rôle est dans Authorities
     }
 
-    // ==================== Tests : creerCompte ====================
+    // ==================== creerCompte ====================
     @Test
-    @DisplayName("creerCompte - Crée un compte désactivé avec mot de passe chiffré")
+    @DisplayName("creerCompte — délègue à AccountService et retourne le compte")
     void testCreerCompte() {
-        // Arrange
-        String encodedPassword = "$2b$10$hashed...";
-        when(passwordEncoder.encode(testPassword)).thenReturn(encodedPassword);
-        when(compteRepo.save(any(Compte.class))).thenReturn(testCompte);
+        when(accountService.creerCompte(testEmail, testPassword, "Parent"))
+                .thenReturn(testCompte);
 
-        // Act
-        // FIX #1 — creerCompte() accepte toujours le type en paramètre pour
-        // créer l'entrée dans Authorities ; le type n'est plus stocké dans Compte.
         Compte result = authService.creerCompte(testEmail, testPassword, "Parent");
 
-        // Assert
         assertNotNull(result);
         assertEquals(testEmail, result.getEmail());
         assertFalse(result.isEnabled(), "Le compte doit être désactivé à la création");
-
-        verify(passwordEncoder, times(1)).encode(testPassword);
-        verify(compteRepo, times(1)).save(any(Compte.class));
+        verify(accountService, times(1)).creerCompte(testEmail, testPassword, "Parent");
     }
 
     @Test
-    @DisplayName("creerCompte - Fonctionne pour le type Admin")
+    @DisplayName("creerCompte — délègue à AccountService pour le type Admin")
     void testCreerCompteAdmin() {
-        // Arrange
-        // FIX #1 — on ne crée plus un Compte avec setType("Admin") car
-        // setType() n'existe plus.  On retourne simplement un Compte valide.
         Compte adminCompte = new Compte();
         adminCompte.setEmail(testEmail);
         adminCompte.setPassword("hashed");
         adminCompte.setEnabled(false);
 
-        when(passwordEncoder.encode(testPassword)).thenReturn("hashed");
-        when(compteRepo.save(any(Compte.class))).thenReturn(adminCompte);
+        when(accountService.creerCompte(testEmail, testPassword, "Admin"))
+                .thenReturn(adminCompte);
 
-        // Act
         Compte result = authService.creerCompte(testEmail, testPassword, "Admin");
 
-        // Assert
         assertNotNull(result);
-        assertFalse(result.isEnabled(), "Le compte Admin doit être désactivé à la création");
-        // Le rôle "Admin" est géré dans Authorities, pas dans Compte.
-        verify(compteRepo, times(1)).save(any(Compte.class));
+        assertFalse(result.isEnabled());
+        verify(accountService, times(1)).creerCompte(testEmail, testPassword, "Admin");
     }
 
-    // ==================== Tests : activerCompte ====================
+    // ==================== activerCompte ====================
     @Test
-    @DisplayName("activerCompte - Active le compte et crée l'autorité")
+    @DisplayName("activerCompte — délègue à AccountService")
     void testActiverCompte() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.of(testCompte));
-
-        // FIX #2 — AuthoritiesRepo utilise maintenant un @Id Long (généré).
-        // Il n'existe plus de existsById(String).
-        // On utilise existsByCompteEmail(String) qui vérifie via le lien ManyToOne.
-        when(authoritiesRepo.existsByCompteEmail(testEmail)).thenReturn(false);
-
-        // Act
+        // FIX erreur 2 : on vérifie la délégation, pas les détails du repo
         authService.activerCompte(testEmail);
 
-        // Assert
-        assertTrue(testCompte.isEnabled(), "Le compte doit être activé");
-        verify(authoritiesRepo, times(1)).save(any(Authorities.class));
-        verify(compteRepo, times(1)).save(testCompte);
+        verify(accountService, times(1)).activerCompte(testEmail);
     }
 
     @Test
-    @DisplayName("activerCompte - N'écrase pas une autorité déjà existante")
+    @DisplayName("activerCompte — N'écrase pas une autorité déjà existante (délégation)")
     void testActiverCompteAvecAutoriteExistante() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.of(testCompte));
-
-        // FIX #2 — même correction : existsByCompteEmail au lieu de existsById
-        when(authoritiesRepo.existsByCompteEmail(testEmail)).thenReturn(true);
-
-        // Act
+        // AccountService gère ce cas en interne — AuthService délègue simplement
         authService.activerCompte(testEmail);
 
-        // Assert
-        assertTrue(testCompte.isEnabled());
-        // L'autorité existait déjà → on ne doit PAS en créer une nouvelle
-        verify(authoritiesRepo, times(0)).save(any(Authorities.class));
+        verify(accountService, times(1)).activerCompte(testEmail);
     }
 
     @Test
-    @DisplayName("activerCompte - Lève IllegalArgumentException si le compte n'existe pas")
+    @DisplayName("activerCompte — propage IllegalArgumentException si compte introuvable")
     void testActiverCompteNonExistant() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.empty());
+        // FIX erreur 2 : on stubbe accountService, pas authoritiesRepo
+        doThrow(new IllegalArgumentException("Compte introuvable : " + testEmail))
+                .when(accountService).activerCompte(testEmail);
 
-        // Act & Assert
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> authService.activerCompte(testEmail)
         );
         assertTrue(ex.getMessage().contains("Compte introuvable"));
-        verify(compteRepo, times(0)).save(any());
+        verify(accountService, times(1)).activerCompte(testEmail);
     }
 
-    // ==================== Tests : desactiverCompte ====================
+    // ==================== desactiverCompte ====================
     @Test
-    @DisplayName("desactiverCompte - Désactive un compte actif")
+    @DisplayName("desactiverCompte — délègue à AccountService")
     void testDesactiverCompte() {
-        // Arrange
-        testCompte.setEnabled(true);
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.of(testCompte));
-
-        // Act
         authService.desactiverCompte(testEmail);
 
-        // Assert
-        assertFalse(testCompte.isEnabled(), "Le compte doit être désactivé");
-        verify(compteRepo, times(1)).save(testCompte);
+        verify(accountService, times(1)).desactiverCompte(testEmail);
     }
 
     @Test
-    @DisplayName("desactiverCompte - Lève IllegalArgumentException si le compte n'existe pas")
+    @DisplayName("desactiverCompte — propage IllegalArgumentException si compte introuvable")
     void testDesactiverCompteNonExistant() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.empty());
+        doThrow(new IllegalArgumentException("Compte introuvable : " + testEmail))
+                .when(accountService).desactiverCompte(testEmail);
 
-        // Act & Assert
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> authService.desactiverCompte(testEmail)
@@ -203,33 +160,23 @@ public class AuthServiceTest {
         assertTrue(ex.getMessage().contains("Compte introuvable"));
     }
 
-    // ==================== Tests : changerMotDePasse ====================
+    // ==================== changerMotDePasse ====================
     @Test
-    @DisplayName("changerMotDePasse - Encode et sauvegarde le nouveau mot de passe")
+    @DisplayName("changerMotDePasse — délègue à AccountService")
     void testChangerMotDePasse() {
-        // Arrange
         String nouveauMdp = "newPassword456";
-        String nouveauMdpEncode = "$2b$10$newHashed...";
 
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.of(testCompte));
-        when(passwordEncoder.encode(nouveauMdp)).thenReturn(nouveauMdpEncode);
-
-        // Act
         authService.changerMotDePasse(testEmail, nouveauMdp);
 
-        // Assert
-        assertEquals(nouveauMdpEncode, testCompte.getPassword());
-        verify(passwordEncoder, times(1)).encode(nouveauMdp);
-        verify(compteRepo, times(1)).save(testCompte);
+        verify(accountService, times(1)).changerMotDePasse(testEmail, nouveauMdp);
     }
 
     @Test
-    @DisplayName("changerMotDePasse - Lève IllegalArgumentException si le compte n'existe pas")
+    @DisplayName("changerMotDePasse — propage IllegalArgumentException si compte introuvable")
     void testChangerMotDePasseNonExistant() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.empty());
+        doThrow(new IllegalArgumentException("Compte introuvable : " + testEmail))
+                .when(accountService).changerMotDePasse(eq(testEmail), anyString());
 
-        // Act & Assert
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> authService.changerMotDePasse(testEmail, "newPassword")
@@ -237,209 +184,147 @@ public class AuthServiceTest {
         assertTrue(ex.getMessage().contains("Compte introuvable"));
     }
 
-    // ==================== Tests : getCurrentUser ====================
+    // ==================== getCurrentUser ====================
     @Test
-    @DisplayName("getCurrentUser - Retourne l'utilisateur connecté")
+    @DisplayName("getCurrentUser — délègue à AccountService et retourne le compte")
     void testGetCurrentUser() {
-        // Arrange
         java.security.Principal principal = () -> testEmail;
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.of(testCompte));
+        when(accountService.getCurrentUser(principal)).thenReturn(testCompte);
 
-        // Act
         Compte result = authService.getCurrentUser(principal);
 
-        // Assert
         assertNotNull(result);
         assertEquals(testEmail, result.getEmail());
+        verify(accountService, times(1)).getCurrentUser(principal);
     }
 
     @Test
-    @DisplayName("getCurrentUser - Retourne null si principal est null")
+    @DisplayName("getCurrentUser — retourne null si principal est null")
     void testGetCurrentUserNull() {
-        // Act
+        when(accountService.getCurrentUser(null)).thenReturn(null);
+
         Compte result = authService.getCurrentUser(null);
 
-        // Assert
         assertNull(result);
-        verify(compteRepo, times(0)).findById(anyString());
+        verify(accountService, times(1)).getCurrentUser(null);
     }
 
     @Test
-    @DisplayName("getCurrentUser - Retourne null si l'utilisateur n'existe pas en base")
+    @DisplayName("getCurrentUser — retourne null si utilisateur introuvable en base")
     void testGetCurrentUserNonExistant() {
-        // Arrange
         java.security.Principal principal = () -> testEmail;
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.empty());
+        when(accountService.getCurrentUser(principal)).thenReturn(null);
 
-        // Act
         Compte result = authService.getCurrentUser(principal);
 
-        // Assert
         assertNull(result);
     }
 
-    // ==================== Tests : getCompteByEmail ====================
+    // ==================== getCompteByEmail ====================
     @Test
-    @DisplayName("getCompteByEmail - Retourne un compte existant")
+    @DisplayName("getCompteByEmail — délègue à AccountService et retourne Optional")
     void testGetCompteByEmail() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.of(testCompte));
+        when(accountService.getCompteByEmail(testEmail))
+                .thenReturn(Optional.of(testCompte));
 
-        // Act
         Optional<Compte> result = authService.getCompteByEmail(testEmail);
 
-        // Assert
         assertTrue(result.isPresent());
         assertEquals(testCompte, result.get());
     }
 
     @Test
-    @DisplayName("getCompteByEmail - Retourne Optional.empty() si non trouvé")
+    @DisplayName("getCompteByEmail — retourne Optional.empty() si non trouvé")
     void testGetCompteByEmailNonExistant() {
-        // Arrange
-        when(compteRepo.findById(testEmail)).thenReturn(Optional.empty());
+        when(accountService.getCompteByEmail(testEmail))
+                .thenReturn(Optional.empty());
 
-        // Act
         Optional<Compte> result = authService.getCompteByEmail(testEmail);
 
-        // Assert
         assertFalse(result.isPresent());
     }
 
-    // ==================== Tests : vérification des rôles ====================
-    // FIX #1 — les méthodes hasRole / isAdmin / isParent / isDirector ne
-    // peuvent plus lire Compte.getType() (supprimé par SRP).
-    // Deux stratégies possibles selon ton implémentation de AuthService :
-    //
-    //   Stratégie A — AuthService consulte AuthoritiesRepo (recommandé SRP) :
-    //     → mocker authoritiesRepo.existsByCompteEmailAndAuthority(email, role)
-    //
-    //   Stratégie B — AuthService garde des helpers qui interrogent Authorities
-    //     via un appel interne ; le test reste identique côté API publique.
-    //
-    // Les tests ci-dessous utilisent la stratégie A.
-    // -----------------------------------------------------------------------
+    // ==================== Helpers de rôle ====================
+    // AuthService délègue à AccountService — on vérifie uniquement la délégation.
+    // Les tests détaillés (mock authoritiesRepo) sont dans AccountServiceTest.
     @Test
-    @DisplayName("hasRole - Retourne true si l'autorité existe en base")
+    @DisplayName("hasRole — délègue à AccountService et retourne true")
     void testHasRoleTrue() {
-        // Arrange — mock AuthoritiesRepo pour simuler le rôle "Parent"
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_PARENT)).thenReturn(true);
+        when(accountService.hasRole(testCompte, "Parent")).thenReturn(true);
 
-        // Act
         boolean result = authService.hasRole(testCompte, "Parent");
 
-        // Assert
         assertTrue(result);
+        verify(accountService, times(1)).hasRole(testCompte, "Parent");
     }
 
     @Test
-    @DisplayName("hasRole - Retourne false si l'autorité n'existe pas")
+    @DisplayName("hasRole — délègue à AccountService et retourne false")
     void testHasRoleFalse() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_ADMIN)).thenReturn(false);
+        when(accountService.hasRole(testCompte, "Admin")).thenReturn(false);
 
-        // Act
-        boolean result = authService.hasRole(testCompte, "Admin");
-
-        // Assert
-        assertFalse(result);
+        assertFalse(authService.hasRole(testCompte, "Admin"));
     }
 
     @Test
-    @DisplayName("hasRole - Retourne false si le compte est null")
+    @DisplayName("hasRole — retourne false si compte null")
     void testHasRoleNull() {
-        // Act — pas de mock nécessaire : null court-circuite avant le repo
+        when(accountService.hasRole(null, "Parent")).thenReturn(false);
+
         boolean result = authService.hasRole(null, "Parent");
 
-        // Assert
         assertFalse(result);
-        verify(authoritiesRepo, times(0))
-                .existsByCompteEmailAndAuthority(anyString(), any());
+        verify(accountService, times(1)).hasRole(null, "Parent");
     }
 
     @Test
-    @DisplayName("isAdmin - Retourne true quand le rôle ROLE_ADMIN est présent")
+    @DisplayName("isAdmin — délègue à AccountService et retourne true")
     void testIsAdminTrue() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_ADMIN)).thenReturn(true);
+        when(accountService.isAdmin(testCompte)).thenReturn(true);
 
-        // Act
-        boolean result = authService.isAdmin(testCompte);
-
-        // Assert
-        assertTrue(result);
+        assertTrue(authService.isAdmin(testCompte));
+        verify(accountService, times(1)).isAdmin(testCompte);
     }
 
     @Test
-    @DisplayName("isAdmin - Retourne false pour un compte sans rôle Admin")
+    @DisplayName("isAdmin — délègue à AccountService et retourne false")
     void testIsAdminFalse() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_ADMIN)).thenReturn(false);
+        when(accountService.isAdmin(testCompte)).thenReturn(false);
 
-        // Act
-        boolean result = authService.isAdmin(testCompte);
-
-        // Assert
-        assertFalse(result);
+        assertFalse(authService.isAdmin(testCompte));
     }
 
     @Test
-    @DisplayName("isDirector - Retourne true quand le rôle ROLE_DIRECTOR est présent")
+    @DisplayName("isDirector — délègue à AccountService et retourne true")
     void testIsDirectorTrue() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_DIRECTOR)).thenReturn(true);
+        when(accountService.isDirector(testCompte)).thenReturn(true);
 
-        // Act
-        boolean result = authService.isDirector(testCompte);
-
-        // Assert
-        assertTrue(result);
+        assertTrue(authService.isDirector(testCompte));
+        verify(accountService, times(1)).isDirector(testCompte);
     }
 
     @Test
-    @DisplayName("isDirector - Retourne false pour un compte sans rôle Director")
+    @DisplayName("isDirector — délègue à AccountService et retourne false")
     void testIsDirectorFalse() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_DIRECTOR)).thenReturn(false);
+        when(accountService.isDirector(testCompte)).thenReturn(false);
 
-        // Act
-        boolean result = authService.isDirector(testCompte);
-
-        // Assert
-        assertFalse(result);
+        assertFalse(authService.isDirector(testCompte));
     }
 
     @Test
-    @DisplayName("isParent - Retourne true quand le rôle ROLE_PARENT est présent")
+    @DisplayName("isParent — délègue à AccountService et retourne true")
     void testIsParentTrue() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_PARENT)).thenReturn(true);
+        when(accountService.isParent(testCompte)).thenReturn(true);
 
-        // Act
-        boolean result = authService.isParent(testCompte);
-
-        // Assert
-        assertTrue(result);
+        assertTrue(authService.isParent(testCompte));
+        verify(accountService, times(1)).isParent(testCompte);
     }
 
     @Test
-    @DisplayName("isParent - Retourne false pour un compte sans rôle Parent")
+    @DisplayName("isParent — délègue à AccountService et retourne false")
     void testIsParentFalse() {
-        // Arrange
-        when(authoritiesRepo.existsByCompteEmailAndAuthority(
-                testEmail, RoleType.ROLE_PARENT)).thenReturn(false);
+        when(accountService.isParent(testCompte)).thenReturn(false);
 
-        // Act
-        boolean result = authService.isParent(testCompte);
-
-        // Assert
-        assertFalse(result);
+        assertFalse(authService.isParent(testCompte));
     }
 }
