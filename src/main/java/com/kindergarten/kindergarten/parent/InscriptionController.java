@@ -108,30 +108,18 @@ public class InscriptionController {
         return "/error/accessDenied";
     }
 
+   
     @PostMapping("/parent/children/saveInsc")
     public String saveInscription(Principal principal, InscriptionUI inscriptionUI) {
-        Compte currentuser = null;
-
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (currentuser.getType().equals("Parent")) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = enfantRepo.findById(inscriptionUI.getEnfid()).get();
                 KinderGarten kindergarten = kgrepo.findById(inscriptionUI.getKgid()).get();
 
-                // ** Inscription  avant créé manuellement **//
-            /*  Inscription inscription = new Inscription();
-                inscription.setAnneescolaire(inscriptionUI.getAnneescol());
-                inscription.setDate(inscriptionUI.getDate());
-                inscription.setClass_level(inscriptionUI.getClass_level());
-                inscription.setEnfant(enfant);
-                inscription.setKindergarten(kindergarten);
-                inscription.setParent(parent);
-                inscription.setValid(false);
-                inscrepo.save(inscription);
-            */
-                // ** Inscription créé via la méthode createInscription de KinderGarten (GRASP CREATOR) **//
+                // GRASP CREATOR : KinderGarten crée l'Inscription
                 Inscription inscription = kindergarten.createInscription(
                         enfant,
                         parent,
@@ -140,20 +128,17 @@ public class InscriptionController {
                         inscriptionUI.getDate()
                 );
                 inscrepo.save(inscription);
-                // ** Notifier le Director par email (GoF OBSERVER) **//     
-                Director director = kindergarten.getDirector();
-                if(director != null){
-                    DirectorNotifier directorNotifier = new DirectorNotifier(director, mailSender);
-                    kinderGartenSubject.addObserver(directorNotifier);
-                    kinderGartenSubject.notifyObservers(inscription);
-                    kinderGartenSubject.removeObserver(directorNotifier);
-                }
+
+                // GoF OBSERVER : notifier les observers abonnés
+                // Les DirectorNotifiers sont enregistrés au démarrage via ObserverConfig
+                kinderGartenSubject.notifyObservers(inscription);
 
                 return "redirect:/";
             }
         }
         return "/error/accessDenied";
     }
+
 
     @GetMapping("/parent/children/unenroll/delete/{id}")
     public String deleteInscription(@PathVariable("id") String id) {
