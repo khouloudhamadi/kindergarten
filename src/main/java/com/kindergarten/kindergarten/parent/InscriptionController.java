@@ -130,7 +130,6 @@ public class InscriptionController {
                 inscrepo.save(inscription);
 
                 // GoF OBSERVER : notifier les observers abonnés
-                // Les DirectorNotifiers sont enregistrés au démarrage via ObserverConfig
                 kinderGartenSubject.notifyObservers(inscription);
 
                 return "redirect:/";
