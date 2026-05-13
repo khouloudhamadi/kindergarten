@@ -4,43 +4,36 @@ import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import com.kindergarten.kindergarten.director.Director;
-import com.kindergarten.kindergarten.director.DirectorRepo;
-import com.kindergarten.kindergarten.parent.Parent;
-import com.kindergarten.kindergarten.parent.ParentRepo;
-
+/**
+ * CompteController - GRASP Controller Pattern
+ *
+ * Responsabilités : 1. Afficher la liste des comptes (Admin seulement) 2.
+ * Afficher le formulaire de création de compte 3. Afficher les permissions d'un
+ * compte 4. Sauvegarder les modifications d'un compte 5. Supprimer un compte
+ *
+ * Délégation : - Activation/Désactivation → AuthController + AuthService -
+ * Changement de mot de passe → AuthController + AuthService - Création de
+ * compte → AuthController + AuthService
+ */
 @Controller
 public class CompteController {
-    @Autowired
-    private CompteRepo repo;
 
     @Autowired
-    private AuthoritiesRepo authrepo;
+    private CompteService compteService;
 
     @Autowired
-    private ParentRepo parentrepo;
-
-    @Autowired
-    private DirectorRepo directorrepo;
-
-    @Autowired
-    private CompteRepo cptrepo;
+    private AuthService authService;
 
     @GetMapping("/compte")
     public String listComptes(Principal principal, Model m) {
-        Compte currentuser = null;
-        if (principal != null) {
-            String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-        }
-        List<Compte> listcomptes = (List<Compte>) repo.findAll();
+        Compte currentuser = compteService.getCurrentUser(principal);
+        List<Compte> listcomptes = compteService.getAllComptes();
         m.addAttribute("currentuser", currentuser);
         m.addAttribute("listcomptes", listcomptes);
         return "/compte/index";
@@ -48,14 +41,9 @@ public class CompteController {
 
     @GetMapping("/compte/new")
     public String showFormCompte(Principal principal, Model model) {
-        Compte currentuser = null;
-        if (principal != null) {
-            String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-        }
+        Compte currentuser = compteService.getCurrentUser(principal);
 
         Compte compte = new Compte();
-        compte.setType("Admin");
         model.addAttribute("currentuser", currentuser);
         model.addAttribute("compte", compte);
 
@@ -64,87 +52,81 @@ public class CompteController {
 
     @GetMapping("/compte/setperms/{email}")
     public String setPermCompte(@PathVariable("email") String email, Principal principal, Model model) {
-        Compte currentuser = null;
-        if (principal != null) {
-            String uemail = principal.getName();
-            currentuser = cptrepo.findById(uemail).get();
-        }
+        Compte currentuser = compteService.getCurrentUser(principal);
 
-        Compte compte = repo.findById(email).get();
-        CompteOwner cpt_owner = new CompteOwner();
-        if (compte.getType().equals("Admin")) {
-            cpt_owner.setType("Admin");
-            cpt_owner.setNom("");
-            cpt_owner.setPrenom("");
-        } else if (compte.getType().equals("Parent")) {
-            Parent parent = parentrepo.findById(email).get();
-            cpt_owner.setType("Parent");
-            cpt_owner.setNom(parent.getNom());
-            cpt_owner.setPrenom(parent.getPrenom());
-        } else if (compte.getType().equals("Kindergarten Director")) {
-            Director director = directorrepo.findById(email).get();
-            cpt_owner.setType("Kindergarten Director");
-            cpt_owner.setNom(director.getNom());
-            cpt_owner.setPrenom(director.getPrenom());
-        }
+        Compte compte = compteService.getCompteByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Compte introuvable"));
+        CompteOwner cpt_owner = compteService.buildCompteOwner(compte);
+
         model.addAttribute("compte", compte);
         model.addAttribute("cpt_owner", cpt_owner);
-
         model.addAttribute("currentuser", currentuser);
         return "/compte/setperms";
     }
 
     @PostMapping("/compte/save")
     public String saveCompte(Compte cpt) {
-        BCryptPasswordEncoder bpe = new BCryptPasswordEncoder();
-        if (cpt.getPassword() == null) {
-            Compte old = repo.findById(cpt.getEmail()).get();
-            cpt.setPassword(old.getPassword());
-        } else {
-            cpt.setPassword(bpe.encode(cpt.getPassword()));
-        }
-        repo.save(cpt);
+        compteService.saveCompteWithOldPassword(cpt);
         return "redirect:/compte";
     }
 
     @GetMapping("/compte/delete/{email}")
     public String deleteCompte(@PathVariable("email") String email) {
-        Compte cpt = repo.findById(email).get();
-        if (cpt.getType().equals("Kindergarten Director")) {
-            directorrepo.deleteById(email);
-        } else if (cpt.getType().equals("Parent")) {
-            parentrepo.deleteById(email);
-        } else {
-            repo.deleteById(email);
-        }
-        authrepo.deleteById(email);
+        compteService.supprimerCompte(email);
         return "redirect:/compte";
     }
 
+    /**
+     * Active un compte (Admin seulement) - Pattern GRASP Controller
+     *
+     * 1. Récupère l'utilisateur courant 2. Vérifie les droits (Admin) 3.
+     * Délègue à AuthService 4. Retourne la vue
+     */
     @GetMapping("/compte/activer/{email}")
-    public String activerCompte(@PathVariable("email") String email) {
+    public String activerCompte(
+            @PathVariable("email") String email,
+            Principal principal) {
+
+        // Vérifier les droits d'accès (Admin seulement)
+        Compte currentUser = authService.getCurrentUser(principal);
+        if (!authService.isAdmin(currentUser)) {
+            return "/error/accessDenied";
+        }
+
+        // Déléguer au service métier
         try {
-            Compte cpt = repo.findById(email).get();
-            cpt.setEnabled(true);
-            Authorities auth = null;
-            if (!authrepo.existsById(email)) {
-                auth = new Authorities();
-                auth.setUsername(email);
-                auth.setAuthority(cpt.getType());
-                authrepo.save(auth);
-            }
-            repo.save(cpt);
-        } catch (Exception ex) {
-            System.out.println("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooo" + ex.getMessage());
+            authService.activerCompte(email);
+        } catch (IllegalArgumentException ex) {
+            System.err.println("Erreur lors de l'activation du compte : " + ex.getMessage());
+            return "redirect:/compte?error=" + ex.getMessage();
         }
         return "redirect:/compte";
     }
 
+    /**
+     * Désactive un compte (Admin seulement) - Pattern GRASP Controller
+     *
+     * 1. Récupère l'utilisateur courant 2. Vérifie les droits (Admin) 3.
+     * Délègue à AuthService 4. Retourne la vue
+     */
     @GetMapping("/compte/desactiver/{email}")
-    public String desactiverCompte(@PathVariable("email") String email) {
-        Compte cpt = repo.findById(email).get();
-        cpt.setEnabled(false);
-        repo.save(cpt);
+    public String desactiverCompte(
+            @PathVariable("email") String email,
+            Principal principal) {
+
+        // Vérifier les droits d'accès (Admin seulement)
+        Compte currentUser = authService.getCurrentUser(principal);
+        if (!authService.isAdmin(currentUser)) {
+            return "/error/accessDenied";
+        }
+
+        // Déléguer au service métier
+        try {
+            authService.desactiverCompte(email);
+        } catch (IllegalArgumentException ex) {
+            System.err.println("Erreur lors de la désactivation du compte : " + ex.getMessage());
+            return "redirect:/compte?error=" + ex.getMessage();
+        }
         return "redirect:/compte";
     }
 }

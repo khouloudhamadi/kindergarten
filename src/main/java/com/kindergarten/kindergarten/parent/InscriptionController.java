@@ -132,7 +132,6 @@ public class InscriptionController {
         if (principal != null) {
             String email = principal.getName();
             Compte currentuser = cptrepo.findById(email).get();
-
             if (currentuser.getType().equals("Parent")) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = enfantRepo.findById(inscriptionUI.getEnfid()).get();

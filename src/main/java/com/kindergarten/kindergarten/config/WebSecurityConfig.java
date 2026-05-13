@@ -31,13 +31,12 @@ public class WebSecurityConfig {
                 .permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/accessdenied");
-
         return http.build();
     }
 
     @Bean
-    JdbcUserDetailsManager getUserDM(DataSource ds) {
-        return new JdbcUserDetailsManager(ds);
+    JdbcUserDetailsManager getUserDM(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
     }
 
     @Bean

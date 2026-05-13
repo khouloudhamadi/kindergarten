@@ -25,20 +25,24 @@ import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
 
 @Controller
 public class ParentController {
-    @Autowired
-    private ParentRepo repo;
 
+    // =====================================================
+    // PATRON GoF — FACADE : utilisation de FamilleFacade
+    // Au lieu d'injecter ParentRepo + EnfantRepo séparément,
+    // on utilise uniquement la Facade → interface unifiée.
+    // =====================================================
+    @Autowired
+    private FamilleFacade familleFacade; // ← FACADE
+
+    // Ces repos restent pour les besoins non couverts par la Facade
     @Autowired
     private CompteRepo cptrepo;
 
     @Autowired
-    KinderGartenRepo kgrepo;
+    private KinderGartenRepo kgrepo;
 
     @Autowired
     private FileStorageService storage;
-
-    @Autowired
-    private EnfantRepo enfrepo;
 
     @Autowired
     private InscriptionRepo inscrepo;
@@ -49,7 +53,7 @@ public class ParentController {
     @PostMapping("/parent/register")
     public String registerParent(ParentInfo pinf) {
         BCryptPasswordEncoder bcpe = new BCryptPasswordEncoder();
-        Parent parent = new Parent();
+
         Compte cpt = new Compte();
         cpt.setType("Parent");
         cpt.setEmail(pinf.getEmail());
@@ -57,6 +61,8 @@ public class ParentController {
         cpt.setConfirm_password(bcpe.encode(pinf.getPassword()));
         cpt.setEnabled(false);
         cptrepo.save(cpt);
+
+        Parent parent = new Parent();
         parent.setCompte(cpt);
         parent.setEmail(pinf.getEmail());
         parent.setAdresse(pinf.getAdresse());
@@ -65,22 +71,26 @@ public class ParentController {
         parent.setSexe(pinf.getSexe());
         parent.setTel1(pinf.getTel1());
         parent.setTel2(pinf.getTel2());
-        repo.save(parent);
+
+        // ✅ FACADE : remplace repo.save(parent)
+        familleFacade.sauvegarderParent(parent);
+
         return "redirect:/";
     }
 
     @GetMapping("/parent/profile/myProfile")
     public String setProfile(Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-
+            Compte currentuser = cptrepo.findById(email).get();
             model.addAttribute("currentuser", currentuser);
-            if (currentuser.getType().equals("Parent")) {
-                Parent parent = repo.findById(email).get();
-                ParentInfo pinfo = new ParentInfo();
 
+            if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace repo.findById(email).get()
+                Parent parent = familleFacade.getParent(email);
+
+                ParentInfo pinfo = new ParentInfo();
                 pinfo.setEmail(parent.getEmail());
                 pinfo.setAdresse(parent.getAdresse());
                 pinfo.setNom(parent.getNom());
@@ -88,35 +98,39 @@ public class ParentController {
                 pinfo.setTel1(parent.getTel1());
                 pinfo.setTel2(parent.getTel2());
                 pinfo.setSexe(parent.getSexe());
-                model.addAttribute("pinfo", pinfo);
-                model.addAttribute("currentuser", currentuser);
 
+                model.addAttribute("pinfo", pinfo);
                 return "/parent/profile";
             }
         }
-
         return "/error/accessDenied";
-
     }
 
     @PostMapping("/parent/profile/save")
     public String saveProfile(ParentInfo pinf) {
         BCryptPasswordEncoder bpe = new BCryptPasswordEncoder();
+
         Compte cpt = cptrepo.findById(pinf.getEmail()).get();
-        Parent parent = repo.findById(pinf.getEmail()).get();
+
+        // ✅ FACADE : remplace repo.findById(pinf.getEmail()).get()
+        Parent parent = familleFacade.getParent(pinf.getEmail());
+
         parent.setAdresse(pinf.getAdresse());
         parent.setNom(pinf.getNom());
         parent.setPrenom(pinf.getPrenom());
+        parent.setTel1(pinf.getTel1());
+        parent.setTel2(pinf.getTel2());
+        parent.setSexe(pinf.getSexe());
+
         if (pinf.getPassword().length() > 0) {
             cpt.setPassword(bpe.encode(pinf.getPassword()));
             cpt.setConfirm_password(bpe.encode(pinf.getPassword()));
         }
         parent.setCompte(cpt);
-        parent.setTel1(pinf.getTel1());
-        parent.setTel2(pinf.getTel2());
-        parent.setSexe(pinf.getSexe());
         cptrepo.save(cpt);
-        repo.save(parent);
+
+        // ✅ FACADE : remplace repo.save(parent)
+        familleFacade.sauvegarderParent(parent);
 
         return "redirect:/";
     }
@@ -128,10 +142,10 @@ public class ParentController {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
         }
-        List<KinderGarten> listKG = null;
+
+        List<KinderGarten> listKG = (List<KinderGarten>) kgrepo.findAll();
         List<KGwithPhotos> listKGwithPhotos = new ArrayList<>();
 
-        listKG = (List<KinderGarten>) kgrepo.findAll();
         for (KinderGarten kg : listKG) {
             KGwithPhotos kgph = new KGwithPhotos();
             kgph.setId(kg.getId());
@@ -151,6 +165,7 @@ public class ParentController {
             kgph.setPhotos(lfdb);
             listKGwithPhotos.add(kgph);
         }
+
         model.addAttribute("currentuser", currentuser);
         model.addAttribute("listKGwithPhotos", listKGwithPhotos);
         return "/parent/home";
@@ -158,15 +173,17 @@ public class ParentController {
 
     @GetMapping("/parent/payment")
     public String paymentInscriptions(Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-
+            Compte currentuser = cptrepo.findById(email).get();
             model.addAttribute("currentuser", currentuser);
+
             if (currentuser.getType().equals("Parent")) {
-                Parent parent = repo.findById(email).get();
-                List<Enfant> listEnfants = enfrepo.findByParent(parent);
+
+                // ✅ FACADE : remplace repo.findById() + enfrepo.findByParent()
+                Parent parent = familleFacade.getParent(email);
+                List<Enfant> listEnfants = familleFacade.getEnfantsduParent(email);
+
                 List<InscriptionPayment> listInscPayment = new ArrayList<>();
                 for (Enfant e : listEnfants) {
                     InscriptionPayment inscp = new InscriptionPayment();
@@ -175,46 +192,42 @@ public class ParentController {
                     inscp.setPrenom(e.getPrenom());
                     inscp.setParent(e.getParent().getNom() + " " + e.getParent().getPrenom());
                     List<Inscription> linsc = inscrepo.findByEnfantAndValidOrderByDateDesc(e, true);
-                    if (linsc != null) {
-                        if (linsc.size() > 0) {
-                            Inscription ins = linsc.get(0);
-                            inscp.setKindergarten_name(ins.getKindergarten().getNom());
-                            inscp.setAnneescol(ins.getAnneescolaire());
-                            inscp.setClassLevel(ins.getClass_level());
-                            inscp.setDateInsc(ins.getDate());
-                            inscp.setIdInsc(ins.getId());
-                            listInscPayment.add(inscp);
-                        }
+                    if (linsc != null && linsc.size() > 0) {
+                        Inscription ins = linsc.get(0);
+                        inscp.setKindergarten_name(ins.getKindergarten().getNom());
+                        inscp.setAnneescol(ins.getAnneescolaire());
+                        inscp.setClassLevel(ins.getClass_level());
+                        inscp.setDateInsc(ins.getDate());
+                        inscp.setIdInsc(ins.getId());
+                        listInscPayment.add(inscp);
                     }
-
                 }
-                model.addAttribute("parent", parent);
-                model.addAttribute("currentuser", currentuser);
-                model.addAttribute("listInscPayment", listInscPayment);
 
+                model.addAttribute("parent", parent);
+                model.addAttribute("listInscPayment", listInscPayment);
                 return "/parent/payment/index";
             }
         }
-
         return "/error/accessDenied";
-
     }
 
     @GetMapping("/parent/payment/pay/{id}")
     public String showPaymentForm(@PathVariable("id") Integer id, Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-
+            Compte currentuser = cptrepo.findById(email).get();
             model.addAttribute("currentuser", currentuser);
+
             if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace repo.findById(email).get()
+                Parent parent = familleFacade.getParent(email);
+
                 PayReference payreference = new PayReference();
-                Parent parent = repo.findById(email).get();
                 Inscription insc = inscrepo.findById(id).get();
                 List<Payment> payments = paymentrepo.findByInscriptionOrderById(insc);
+
                 model.addAttribute("parent", parent);
-                model.addAttribute("currentuser", currentuser);
                 model.addAttribute("inscription", insc);
                 model.addAttribute("payments", payments);
                 model.addAttribute("payreference", payreference);
@@ -226,15 +239,17 @@ public class ParentController {
 
     @GetMapping("/parent/registeredChildren")
     public String showRegistredChildren(Principal principal, Model model) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-
+            Compte currentuser = cptrepo.findById(email).get();
             model.addAttribute("currentuser", currentuser);
+
             if (currentuser.getType().equals("Parent")) {
-                Parent parent = repo.findById(email).get();
-                List<Enfant> listEnfants = enfrepo.findByParent(parent);
+
+                // ✅ FACADE : remplace repo.findById() + enfrepo.findByParent()
+                Parent parent = familleFacade.getParent(email);
+                List<Enfant> listEnfants = familleFacade.getEnfantsduParent(email);
+
                 List<InscriptionPayment> listInscPayment = new ArrayList<>();
                 for (Enfant e : listEnfants) {
                     InscriptionPayment inscp = new InscriptionPayment();
@@ -242,46 +257,41 @@ public class ParentController {
                     inscp.setNom(e.getNom());
                     inscp.setPrenom(e.getPrenom());
                     List<Inscription> linsc = inscrepo.findByEnfantAndValidOrderByDateDesc(e, true);
-                    if (linsc != null) {
-                        if (linsc.size() > 0) {
-                            Inscription ins = linsc.get(0);
-                            inscp.setKindergarten_name(ins.getKindergarten().getNom());
-                            inscp.setAnneescol(ins.getAnneescolaire());
-                            inscp.setClassLevel(ins.getClass_level());
-                            inscp.setDateInsc(ins.getDate());
-                            listInscPayment.add(inscp);
-                        }
+                    if (linsc != null && linsc.size() > 0) {
+                        Inscription ins = linsc.get(0);
+                        inscp.setKindergarten_name(ins.getKindergarten().getNom());
+                        inscp.setAnneescol(ins.getAnneescolaire());
+                        inscp.setClassLevel(ins.getClass_level());
+                        inscp.setDateInsc(ins.getDate());
+                        listInscPayment.add(inscp);
                     }
-
                 }
-                model.addAttribute("parent", parent);
-                model.addAttribute("currentuser", currentuser);
-                model.addAttribute("listInscPayment", listInscPayment);
 
+                model.addAttribute("parent", parent);
+                model.addAttribute("listInscPayment", listInscPayment);
                 return "/parent/registeredChildren";
             }
         }
-
         return "/error/accessDenied";
-
     }
 
     @PostMapping("/parent/payment/pay/save")
     public String savePayment(Principal principal, PayReference payreference, Model model) {
-        Compte currentuser = null;
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         String today = formatter.format(date);
+
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
-
+            Compte currentuser = cptrepo.findById(email).get();
             model.addAttribute("currentuser", currentuser);
+
             if (currentuser.getType().equals("Parent")) {
                 Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
                 System.out.println("ooooooooooooooooooooooooooooooooooooooooooooooooooo" + payreference.getMonths());
                 String[] idmonths = payreference.getMonths().split("@");
                 List<Payment> payments = paymentrepo.findByInscription(insc);
+
                 for (Payment p : payments) {
                     for (int i = 0; i < idmonths.length; i++) {
                         Integer idm = Integer.parseInt(idmonths[i].substring(2));
@@ -293,11 +303,9 @@ public class ParentController {
                             paymentrepo.save(p);
                         }
                     }
-
                 }
                 return "redirect:/parent/payment";
             }
-
         }
         return "/error/accessDenied";
     }
