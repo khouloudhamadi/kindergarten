@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.kindergarten.kindergarten.compte.Compte;
 import com.kindergarten.kindergarten.compte.CompteRepo;
+import com.kindergarten.kindergarten.compte.RoleService;
+import com.kindergarten.kindergarten.compte.RoleType;
 import com.kindergarten.kindergarten.kindergarten.KinderGarten;
 import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
 
 @Controller
 public class EnfantController {
+
     @Autowired
     private EnfantRepo repo;
 
@@ -33,13 +36,16 @@ public class EnfantController {
     @Autowired
     private InscriptionRepo inscrepo;
 
+    @Autowired
+    private RoleService roleService;
+
     @GetMapping("/parent/children")
     public String home(Principal principal, Model model) {
         Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Parent")) {
+            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 List<Enfant> children = repo.findByParent(parent);
                 model.addAttribute("parent", parent);
@@ -57,7 +63,7 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Parent")) {
+            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = new Enfant();
                 m.addAttribute("enfant", enfant);
@@ -75,7 +81,7 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Parent")) {
+            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = repo.findById(id).get();
                 m.addAttribute("enfant", enfant);
@@ -93,7 +99,7 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Parent")) {
+            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 KinderGarten kindergarten = kgrepo.findById(kgid).get();
                 List<Enfant> allchildren = repo.findByParent(parent);
@@ -119,7 +125,7 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Parent")) {
+            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 repo.deleteById(id);
                 return "redirect:/parent/children";
             }
@@ -133,7 +139,7 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             currentuser = cptrepo.findById(email).get();
-            if (currentuser.getType().equals("Parent")) {
+            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
                 Parent parent = parentrepo.findById(email).get();
                 enfant.setParent(parent);
                 repo.save(enfant);
