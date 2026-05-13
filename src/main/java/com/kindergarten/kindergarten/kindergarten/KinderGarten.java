@@ -4,6 +4,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.kindergarten.kindergarten.director.Director;
+import com.kindergarten.kindergarten.parent.Inscription;
+import com.kindergarten.kindergarten.parent.Enfant;
+import com.kindergarten.kindergarten.parent.Parent;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -131,6 +134,19 @@ public class KinderGarten {
     @Override
     public String toString() {
         return "KinderGarten " + nom + " : " + adresse;
+    }
+
+    public Inscription createInscription(Enfant enfant, Parent parent,
+                                         String anneescolaire, String classLevel, String date) {
+        Inscription inscription = new Inscription();
+        inscription.setKindergarten(this);   
+        inscription.setEnfant(enfant);
+        inscription.setParent(parent);
+        inscription.setAnneescolaire(anneescolaire);
+        inscription.setClass_level(classLevel);
+        inscription.setDate(date);
+        inscription.setValid(false);
+        return inscription;
     }
 
 }

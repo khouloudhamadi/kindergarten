@@ -3,7 +3,11 @@ package com.kindergarten.kindergarten.parent;
 import java.security.Principal;
 import java.util.List;
 
+import com.kindergarten.kindergarten.director.Director;
+import com.kindergarten.kindergarten.observer.DirectorNotifier;
+import com.kindergarten.kindergarten.observer.KinderGartenSubject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +40,14 @@ public class InscriptionController {
 
     @Autowired
     private PaymentParamsRepo paymentparamsrepo;
+
+    // Observer//
+    @Autowired
+    private KinderGartenSubject kinderGartenSubject;
+
+    @Autowired
+    private JavaMailSender mailSender;
+    //--------
 
     @GetMapping("/director/children")
     public String listValidateInsc(Principal principal, Model m) {
@@ -96,30 +108,36 @@ public class InscriptionController {
         return "/error/accessDenied";
     }
 
+   
     @PostMapping("/parent/children/saveInsc")
     public String saveInscription(Principal principal, InscriptionUI inscriptionUI) {
-        Compte currentuser = null;
         if (principal != null) {
             String email = principal.getName();
-            currentuser = cptrepo.findById(email).get();
+            Compte currentuser = cptrepo.findById(email).get();
             if (currentuser.getType().equals("Parent")) {
                 Parent parent = parentrepo.findById(email).get();
                 Enfant enfant = enfantRepo.findById(inscriptionUI.getEnfid()).get();
                 KinderGarten kindergarten = kgrepo.findById(inscriptionUI.getKgid()).get();
-                Inscription inscription = new Inscription();
-                inscription.setAnneescolaire(inscriptionUI.getAnneescol());
-                inscription.setDate(inscriptionUI.getDate());
-                inscription.setClass_level(inscriptionUI.getClass_level());
-                inscription.setEnfant(enfant);
-                inscription.setKindergarten(kindergarten);
-                inscription.setParent(parent);
-                inscription.setValid(false);
+
+                // GRASP CREATOR : KinderGarten crée l'Inscription
+                Inscription inscription = kindergarten.createInscription(
+                        enfant,
+                        parent,
+                        inscriptionUI.getAnneescol(),
+                        inscriptionUI.getClass_level(),
+                        inscriptionUI.getDate()
+                );
                 inscrepo.save(inscription);
+
+                // GoF OBSERVER : notifier les observers abonnés
+                kinderGartenSubject.notifyObservers(inscription);
+
                 return "redirect:/";
             }
         }
         return "/error/accessDenied";
     }
+
 
     @GetMapping("/parent/children/unenroll/delete/{id}")
     public String deleteInscription(@PathVariable("id") String id) {
