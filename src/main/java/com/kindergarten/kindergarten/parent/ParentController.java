@@ -8,21 +8,42 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.kindergarten.kindergarten.compte.AuthService;
 import com.kindergarten.kindergarten.compte.Compte;
-import com.kindergarten.kindergarten.compte.CompteRepo;
+import com.kindergarten.kindergarten.compte.CompteService;
+import com.kindergarten.kindergarten.compte.RoleService;
+import com.kindergarten.kindergarten.compte.RoleType;
 import com.kindergarten.kindergarten.imgfiles.FileDB;
 import com.kindergarten.kindergarten.imgfiles.FileStorageService;
 import com.kindergarten.kindergarten.kindergarten.KGwithPhotos;
 import com.kindergarten.kindergarten.kindergarten.KinderGarten;
 import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
+import com.kindergarten.kindergarten.parent.service.BusinessException;
+import com.kindergarten.kindergarten.parent.service.OneShotPaymentProcessor;
+import com.kindergarten.kindergarten.parent.service.SelectedMonthsPaymentProcessor;
 
+/**
+ * ParentController - GRASP Controller Pattern
+ *
+ * Responsabilités :
+ * 1. Créer un nouveau parent (inscription)
+ * 2. Afficher le profil du parent
+ * 3. Sauvegarder les modifications du profil
+ * 4. Gérer les enfants et les inscriptions
+ * 5. Gérer les paiements (GoF Strategy via OneShotPaymentProcessor /
+ * SelectedMonthsPaymentProcessor)
+ *
+ * Délégation :
+ * - Création du compte → AuthService
+ * - Récupération de l'utilisateur courant → CompteService
+ * - Vérification des rôles → RoleService
+ */
 @Controller
 public class ParentController {
 
@@ -36,7 +57,13 @@ public class ParentController {
 
     // Ces repos restent pour les besoins non couverts par la Facade
     @Autowired
-    private CompteRepo cptrepo;
+    private CompteService compteService;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private RoleService roleService;
 
     @Autowired
     private KinderGartenRepo kgrepo;
@@ -50,6 +77,17 @@ public class ParentController {
     @Autowired
     private PaymentRepo paymentrepo;
 
+    // GoF Strategy — paiement en un seul versement
+    @Autowired
+    private OneShotPaymentProcessor oneShotPaymentProcessor;
+
+    // GoF Strategy — paiement par mois sélectionnés
+    @Autowired
+    private SelectedMonthsPaymentProcessor selectedMonthsPaymentProcessor;
+
+    // -------------------------------------------------------
+    // PARENT : inscription
+    // -------------------------------------------------------
     @PostMapping("/parent/register")
     public String registerParent(ParentInfo pinf) {
         BCryptPasswordEncoder bcpe = new BCryptPasswordEncoder();
@@ -78,6 +116,9 @@ public class ParentController {
         return "redirect:/";
     }
 
+    // -------------------------------------------------------
+    // PARENT : profil
+    // -------------------------------------------------------
     @GetMapping("/parent/profile/myProfile")
     public String setProfile(Principal principal, Model model) {
         if (principal != null) {
@@ -132,9 +173,16 @@ public class ParentController {
         // ✅ FACADE : remplace repo.save(parent)
         familleFacade.sauvegarderParent(parent);
 
+        if (pinf.getPassword() != null && pinf.getPassword().length() > 0) {
+            compteService.changerMotDePasse(pinf.getEmail(), pinf.getPassword());
+        }
+
         return "redirect:/";
     }
 
+    // -------------------------------------------------------
+    // PARENT : home — liste des kindergartens
+    // -------------------------------------------------------
     @GetMapping("/parent/home")
     public String registerChild(Principal principal, Model model) {
         Compte currentuser = null;
@@ -155,10 +203,11 @@ public class ParentController {
             kgph.setTel(kg.getTel());
             kgph.setDirectorfirstname(kg.getDirector().getPrenom());
             kgph.setDirectorlastname(kg.getDirector().getNom());
+
             List<FileDB> lfdb = new ArrayList<>();
             String[] arnf = kg.getPhotos().split("@");
-            for (int i = 0; i < arnf.length; i++) {
-                FileDB fdb = storage.getFile(arnf[i]);
+            for (String filename : arnf) {
+                FileDB fdb = storage.getFile(filename);
                 fdb.setDataB64(Base64.getEncoder().encodeToString(fdb.getData()));
                 lfdb.add(fdb);
             }
@@ -171,6 +220,9 @@ public class ParentController {
         return "/parent/home";
     }
 
+    // -------------------------------------------------------
+    // PARENT : paiements — liste
+    // -------------------------------------------------------
     @GetMapping("/parent/payment")
     public String paymentInscriptions(Principal principal, Model model) {
         if (principal != null) {
@@ -207,10 +259,18 @@ public class ParentController {
                 model.addAttribute("listInscPayment", listInscPayment);
                 return "/parent/payment/index";
             }
+
+            model.addAttribute("parent", parent);
+            model.addAttribute("currentuser", currentuser);
+            model.addAttribute("listInscPayment", listInscPayment);
+            return "/parent/payment/index";
         }
         return "/error/accessDenied";
     }
 
+    // -------------------------------------------------------
+    // PARENT : paiements — formulaire
+    // -------------------------------------------------------
     @GetMapping("/parent/payment/pay/{id}")
     public String showPaymentForm(@PathVariable("id") Integer id, Principal principal, Model model) {
         if (principal != null) {
@@ -231,12 +291,17 @@ public class ParentController {
                 model.addAttribute("inscription", insc);
                 model.addAttribute("payments", payments);
                 model.addAttribute("payreference", payreference);
+
                 return "/parent/payment/payForm";
             }
         }
+
         return "/error/accessDenied";
     }
 
+    // -------------------------------------------------------
+    // PARENT : enfants inscrits
+    // -------------------------------------------------------
     @GetMapping("/parent/registeredChildren")
     public String showRegistredChildren(Principal principal, Model model) {
         if (principal != null) {
@@ -307,6 +372,7 @@ public class ParentController {
                 return "redirect:/parent/payment";
             }
         }
+
         return "/error/accessDenied";
     }
 }

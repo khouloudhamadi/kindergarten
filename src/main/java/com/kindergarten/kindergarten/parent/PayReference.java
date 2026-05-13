@@ -1,10 +1,13 @@
 package com.kindergarten.kindergarten.parent;
 
 public class PayReference {
+ 
     private String months;
     private String reference;
     private Integer idinsc;
     private Double amountpermonth;
+    private String paymentStrategy;
+
 
     /**
      * @return String return the months
@@ -60,6 +63,13 @@ public class PayReference {
      */
     public void setAmountpermonth(Double amountpermonth) {
         this.amountpermonth = amountpermonth;
+    }
+
+    public String getPaymentStrategy() {
+        return paymentStrategy;
+    }
+    public void setPaymentStrategy(String pst) {
+        this.paymentStrategy = pst;
     }
 
 }

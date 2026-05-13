@@ -18,13 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kindergarten.kindergarten.compte.Compte;
 import com.kindergarten.kindergarten.compte.CompteRepo;
+import com.kindergarten.kindergarten.compte.RoleService;
+import com.kindergarten.kindergarten.compte.RoleType;
 import com.kindergarten.kindergarten.director.Director;
 import com.kindergarten.kindergarten.director.DirectorRepo;
 import com.kindergarten.kindergarten.imgfiles.FileDB;
 import com.kindergarten.kindergarten.imgfiles.FileDBRepo;
 import com.kindergarten.kindergarten.imgfiles.IFileStorageService;
 import com.kindergarten.kindergarten.parent.InscriptionRepo;
-
 
 @Controller
 public class KinderGartenDController {
@@ -34,29 +35,27 @@ public class KinderGartenDController {
     @Autowired private CompteRepo compterepo;
     @Autowired private FileDBRepo filedbrepo;
     @Autowired private InscriptionRepo inscriptionrepo;
+    @Autowired private RoleService roleService; // ✅ AJOUTÉ
 
-
-    @Autowired
-    private IFileStorageService storage;
+    // ✅ DIP : dépendance sur l'interface uniquement
+    @Autowired private IFileStorageService storage;
 
     @GetMapping("/director/kindergarten")
     public String listKinderGartens(Principal principal, Model m) {
         if (principal == null) return "/error/accessDenied";
         String email = principal.getName();
         Compte cpt = compterepo.findById(email).get();
-        if (!cpt.getType().equals("Kindergarten Director")) return "/error/accessDenied";
+        // ✅ RoleService au lieu de getType()
+        if (!roleService.aLe(email, RoleType.ROLE_DIRECTOR)) return "/error/accessDenied";
 
         Director directeur = directeurrepo.findById(email).get();
         List<KinderGarten> listKG = repo.findByDirector(directeur);
         List<KGwithPhotos> listKGwithPhotos = new ArrayList<>();
-
         for (KinderGarten kg : listKG) {
-            KGwithPhotos kgph = buildKGwithPhotos(kg, directeur);
-            listKGwithPhotos.add(kgph);
+            listKGwithPhotos.add(buildKGwithPhotos(kg, directeur));
         }
 
-        Compte currentuser = compterepo.findById(email).get();
-        m.addAttribute("currentuser", currentuser);
+        m.addAttribute("currentuser", cpt);
         m.addAttribute("directeur", directeur);
         m.addAttribute("listKGwithPhotos", listKGwithPhotos);
         return "/director/kindergarten/index";
@@ -67,7 +66,7 @@ public class KinderGartenDController {
         if (principal == null) return "/error/accessDenied";
         String email = principal.getName();
         Compte cpt = compterepo.findById(email).get();
-        if (!cpt.getType().equals("Kindergarten Director")) return "/error/accessDenied";
+        if (!roleService.aLe(email, RoleType.ROLE_DIRECTOR)) return "/error/accessDenied";
 
         Director directeur = directeurrepo.findById(email).get();
         model.addAttribute("currentuser", cpt);
@@ -76,13 +75,15 @@ public class KinderGartenDController {
     }
 
     @PostMapping("/director/kindergarten/save")
-    public String saveKg(Principal principal, @RequestParam("nom") String nom,
-            @RequestParam("adresse") String adresse, @RequestParam("email") String email,
-            @RequestParam("tel") String tel, @RequestParam("photos") MultipartFile[] photos) {
+    public String saveKg(Principal principal,
+            @RequestParam("nom") String nom,
+            @RequestParam("adresse") String adresse,
+            @RequestParam("email") String email,
+            @RequestParam("tel") String tel,
+            @RequestParam("photos") MultipartFile[] photos) {
         if (principal == null) return "/error/accessDenied";
         String em = principal.getName();
-        Compte cpt = compterepo.findById(em).get();
-        if (!cpt.getType().equals("Kindergarten Director")) return "/error/accessDenied";
+        if (!roleService.aLe(em, RoleType.ROLE_DIRECTOR)) return "/error/accessDenied";
 
         KinderGarten kg = new KinderGarten();
         kg.setNom(nom);
@@ -101,14 +102,16 @@ public class KinderGartenDController {
     }
 
     @PostMapping("/director/kindergarten/edit/save")
-    public String saveEditKg(Principal principal, @RequestParam("id") String id,
-            @RequestParam("nom") String nom, @RequestParam("adresse") String adresse,
-            @RequestParam("email") String email, @RequestParam("tel") String tel,
+    public String saveEditKg(Principal principal,
+            @RequestParam("id") String id,
+            @RequestParam("nom") String nom,
+            @RequestParam("adresse") String adresse,
+            @RequestParam("email") String email,
+            @RequestParam("tel") String tel,
             @RequestParam("photos") MultipartFile[] photos) {
         if (principal == null) return "/error/accessDenied";
         String em = principal.getName();
-        Compte cpt = compterepo.findById(em).get();
-        if (!cpt.getType().equals("Kindergarten Director")) return "/error/accessDenied";
+        if (!roleService.aLe(em, RoleType.ROLE_DIRECTOR)) return "/error/accessDenied";
 
         KinderGarten kg = repo.findById(Integer.parseInt(id)).get();
         deletePhotos(Integer.parseInt(id));
@@ -119,7 +122,6 @@ public class KinderGartenDController {
         kg.setDirector(directeurrepo.findById(em).get());
 
         try {
-            
             kg.setPhotos(storePhotos(photos));
             repo.save(kg);
             return "redirect:/director/kindergarten";
@@ -133,14 +135,13 @@ public class KinderGartenDController {
         if (principal == null) return "/error/accessDenied";
         String email = principal.getName();
         Compte cpt = compterepo.findById(email).get();
-        if (!cpt.getType().equals("Kindergarten Director")) return "/error/accessDenied";
+        if (!roleService.aLe(email, RoleType.ROLE_DIRECTOR)) return "/error/accessDenied";
 
-        Compte currentuser = compterepo.findById(email).get();
         KinderGarten kd = repo.findById(id).get();
         if (inscriptionrepo.existsByKindergartenAndValid(kd, true)) {
             model.addAttribute("message",
                 "There is a validated Inscription related to this KinderGarten, it could not be deleted");
-            model.addAttribute("currentuser", currentuser);
+            model.addAttribute("currentuser", cpt);
             return "/error/message";
         }
         inscriptionrepo.deleteByKindergarten(kd);
@@ -154,7 +155,7 @@ public class KinderGartenDController {
         if (principal == null) return "/error/accessDenied";
         String email = principal.getName();
         Compte cpt = compterepo.findById(email).get();
-        if (!cpt.getType().equals("Kindergarten Director")) return "/error/accessDenied";
+        if (!roleService.aLe(email, RoleType.ROLE_DIRECTOR)) return "/error/accessDenied";
 
         Director directeur = directeurrepo.findById(email).get();
         KinderGarten kg = repo.findById(id).get();
@@ -166,13 +167,10 @@ public class KinderGartenDController {
         return "/director/kindergarten/showKGEditForm";
     }
 
-
-
     private String storePhotos(MultipartFile[] photos) throws IOException {
         List<FileDB> lfdb = new ArrayList<>();
         Arrays.asList(photos).forEach(file -> {
             try {
-                
                 lfdb.add(storage.store(file));
             } catch (IOException e) { }
         });
@@ -205,7 +203,6 @@ public class KinderGartenDController {
         if (kg.getPhotos() != null && kg.getPhotos().length() > 0) {
             List<FileDB> lfdb = new ArrayList<>();
             for (String photoId : kg.getPhotos().split("@")) {
-                
                 FileDB fdb = storage.getFile(photoId);
                 fdb.setDataB64(Base64.getEncoder().encodeToString(fdb.getData()));
                 lfdb.add(fdb);
