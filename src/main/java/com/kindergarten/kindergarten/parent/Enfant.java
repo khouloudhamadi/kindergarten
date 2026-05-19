@@ -41,7 +41,7 @@ public class Enfant {
     }
 
     /**
-     * @return String return the nom
+     * @return String return le nom de l'enfant
      */
     public String getNom() {
         return nom;

@@ -177,5 +177,15 @@ public class Parent {
     public String toString() {
         return this.nom + " " + this.prenom;
     }
+    public void addEnfant(Enfant enfant)
+    {
+        enfant.setParent(this);
+        this.enfants.add(enfant);
+    }
+    public void removeEnfant(Enfant enfant)
+    {
+        enfant.setParent(null);
+        this.enfants.remove(enfant);
+    }
 
 }

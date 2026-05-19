@@ -20,7 +20,7 @@ public class EnfantSpecialTest {
         es.setTypeHandicap("Visuel");
         es.setSuiviMedical("Orthoptiste");
 
-        // --- Test 1 : héritage ---
+        // --- Test 1 : héritage ----
         assertTrue(es instanceof Enfant);
 
         // --- Test 2 : attributs hérités ---
