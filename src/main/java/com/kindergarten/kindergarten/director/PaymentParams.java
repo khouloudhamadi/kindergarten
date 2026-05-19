@@ -32,6 +32,7 @@ public class PaymentParams {
     private double price = 0;
     private Integer nbMonths = 10;
     private Integer startMonth = 10;
+    private String scheduleType = "MONTHLY";
 
     public PaymentParams() {
     }
@@ -141,5 +142,13 @@ public class PaymentParams {
     public void setStartMonth(Integer startMonth) {
         this.startMonth = startMonth;
     }
+
+    public String getScheduleType() {
+    return scheduleType;
+}
+
+    public void setScheduleType(String scheduleType) {
+    this.scheduleType = scheduleType;
+}
 
 }
