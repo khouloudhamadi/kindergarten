@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class FamilleFacade {
 
-    // --- Sous-systèmes cachés derrière la Facade ---
     @Autowired
     private ParentRepo parentRepo;
 

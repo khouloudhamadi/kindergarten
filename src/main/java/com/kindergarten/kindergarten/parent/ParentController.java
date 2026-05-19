@@ -186,14 +186,14 @@ public class ParentController {
 
                 List<InscriptionPayment> listInscPayment = new ArrayList<>();
                 for (Enfant e : listEnfants) {
-                    InscriptionPayment inscp = new InscriptionPayment();
-                    inscp.setId(e.getId());
-                    inscp.setNom(e.getNom());
-                    inscp.setPrenom(e.getPrenom());
-                    inscp.setParent(e.getParent().getNom() + " " + e.getParent().getPrenom());
                     List<Inscription> linsc = inscrepo.findByEnfantAndValidOrderByDateDesc(e, true);
                     if (linsc != null && linsc.size() > 0) {
                         Inscription ins = linsc.get(0);
+                        InscriptionPayment inscp = new InscriptionPayment();
+                        inscp.setId(e.getId());
+                        inscp.setNom(e.getNom());
+                        inscp.setPrenom(e.getPrenom());
+                        inscp.setParent(e.getParent().getNom() + " " + e.getParent().getPrenom());
                         inscp.setKindergarten_name(ins.getKindergarten().getNom());
                         inscp.setAnneescol(ins.getAnneescolaire());
                         inscp.setClassLevel(ins.getClass_level());
@@ -252,13 +252,13 @@ public class ParentController {
 
                 List<InscriptionPayment> listInscPayment = new ArrayList<>();
                 for (Enfant e : listEnfants) {
-                    InscriptionPayment inscp = new InscriptionPayment();
-                    inscp.setId(e.getId());
-                    inscp.setNom(e.getNom());
-                    inscp.setPrenom(e.getPrenom());
                     List<Inscription> linsc = inscrepo.findByEnfantAndValidOrderByDateDesc(e, true);
                     if (linsc != null && linsc.size() > 0) {
                         Inscription ins = linsc.get(0);
+                        InscriptionPayment inscp = new InscriptionPayment();
+                        inscp.setId(e.getId());
+                        inscp.setNom(e.getNom());
+                        inscp.setPrenom(e.getPrenom());
                         inscp.setKindergarten_name(ins.getKindergarten().getNom());
                         inscp.setAnneescol(ins.getAnneescolaire());
                         inscp.setClassLevel(ins.getClass_level());
@@ -288,7 +288,6 @@ public class ParentController {
 
             if (currentuser.getType().equals("Parent")) {
                 Inscription insc = inscrepo.findById(payreference.getIdinsc()).get();
-                System.out.println("ooooooooooooooooooooooooooooooooooooooooooooooooooo" + payreference.getMonths());
                 String[] idmonths = payreference.getMonths().split("@");
                 List<Payment> payments = paymentrepo.findByInscription(insc);
 

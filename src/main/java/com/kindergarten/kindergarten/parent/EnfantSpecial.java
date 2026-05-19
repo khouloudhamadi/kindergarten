@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 /**
  * SOLID — OCP (Open/Closed Principle)
  * Enfant est fermé à la modification mais ouvert à l'extension.
- * EnfantSpecial étend Enfant sans toucher à la classe de base.
+ * EnfantSpecial étend Enfant sans toucher à la classe de base qui est Enfant.
  */
 @Entity
 public class EnfantSpecial extends Enfant {

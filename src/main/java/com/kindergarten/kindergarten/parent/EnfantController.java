@@ -13,25 +13,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.kindergarten.kindergarten.compte.Compte;
 import com.kindergarten.kindergarten.compte.CompteRepo;
-import com.kindergarten.kindergarten.compte.RoleService;
-import com.kindergarten.kindergarten.compte.RoleType;
 import com.kindergarten.kindergarten.kindergarten.KinderGarten;
 import com.kindergarten.kindergarten.kindergarten.KinderGartenRepo;
 
 @Controller
 public class EnfantController {
 
+    // =====================================================
+    // PATRON GoF — FACADE : utilisation de FamilleFacade
+    // Au lieu d'injecter EnfantRepo + ParentRepo séparément,
+    // on utilise uniquement la Facade → interface unifiée.
+    // =====================================================
     @Autowired
-    private EnfantRepo repo;
+    private FamilleFacade familleFacade; // ← FACADE
 
-    @Autowired
-    private FamilleFacade familleFacade;
-
+    // Ces repos restent pour les besoins non couverts par la Facade
     @Autowired
     private CompteRepo cptrepo;
-
-    @Autowired
-    private ParentRepo parentrepo;  // ✅ AJOUTÉ
 
     @Autowired
     private KinderGartenRepo kgrepo;
@@ -39,19 +37,18 @@ public class EnfantController {
     @Autowired
     private InscriptionRepo inscrepo;
 
-    @Autowired
-    private RoleService roleService;
-
     @GetMapping("/parent/children")
     public String home(Principal principal, Model model) {
         if (principal != null) {
             String email = principal.getName();
-            Compte currentuser = cptrepo.findById(email).get(); // ✅ déclaré localement
-            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
-                Parent parent = parentrepo.findById(email).get();
-                List<Enfant> children = repo.findByParent(parent);
-                model.addAttribute("parent", parent);
-                model.addAttribute("children", children);
+            Compte currentuser = cptrepo.findById(email).get();
+            if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace parentrepo.findById() + repo.findByParent()
+                FamilleFacade.ParentAvecEnfants pae = familleFacade.getParentAvecEnfants(email);
+
+                model.addAttribute("parent", pae.getParent());
+                model.addAttribute("children", pae.getEnfants());
                 model.addAttribute("currentuser", currentuser);
                 return "/parent/children/index";
             }
@@ -64,8 +61,11 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             Compte currentuser = cptrepo.findById(email).get();
-            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
-                Parent parent = parentrepo.findById(email).get();
+            if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace parentrepo.findById()
+                Parent parent = familleFacade.getParent(email);
+
                 Enfant enfant = new Enfant();
                 m.addAttribute("enfant", enfant);
                 m.addAttribute("parent", parent);
@@ -81,9 +81,12 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             Compte currentuser = cptrepo.findById(email).get();
-            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
-                Parent parent = parentrepo.findById(email).get();
-                Enfant enfant = repo.findById(id).get();
+            if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace parentrepo.findById() + repo.findById()
+                Parent parent = familleFacade.getParent(email);
+                Enfant enfant = familleFacade.getEnfant(id);
+
                 m.addAttribute("enfant", enfant);
                 m.addAttribute("parent", parent);
                 m.addAttribute("currentuser", currentuser);
@@ -94,17 +97,17 @@ public class EnfantController {
     }
 
     @GetMapping("/parent/children/register/{kgid}")
-    public String chooseChildToRegister(@PathVariable("kgid") Integer kgid,
-            Principal principal, Model model) {
+    public String chooseChildToRegister(@PathVariable("kgid") Integer kgid, Principal principal, Model model) {
         if (principal != null) {
             String email = principal.getName();
             Compte currentuser = cptrepo.findById(email).get();
-            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
-                Parent parent = parentrepo.findById(email).get();
+            if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace parentrepo.findById() + repo.findByParent()
+                List<Enfant> allchildren = familleFacade.getEnfantsduParent(email);
+                Parent parent = familleFacade.getParent(email);
                 KinderGarten kindergarten = kgrepo.findById(kgid).get();
 
-                // ✅ allchildren remplacé par repo.findByParent(parent)
-                List<Enfant> allchildren = repo.findByParent(parent);
                 List<Enfant> children = new ArrayList<>();
                 for (Enfant child : allchildren) {
                     if (!inscrepo.existsByEnfantAndValid(child, true)) {
@@ -126,8 +129,10 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             Compte currentuser = cptrepo.findById(email).get();
-            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
-                repo.deleteById(id);
+            if (currentuser.getType().equals("Parent")) {
+
+                // ✅ FACADE : remplace repo.deleteById()
+                familleFacade.supprimerEnfant(id);
                 return "redirect:/parent/children";
             }
         }
@@ -139,10 +144,9 @@ public class EnfantController {
         if (principal != null) {
             String email = principal.getName();
             Compte currentuser = cptrepo.findById(email).get();
-            if (roleService.aLe(email, RoleType.ROLE_PARENT)) {
-                Parent parent = parentrepo.findById(email).get();
-                enfant.setParent(parent);
-                repo.save(enfant);
+            if (currentuser.getType().equals("Parent")) {
+
+                familleFacade.ajouterEnfant(email, enfant);
                 return "redirect:/parent/children";
             }
         }
